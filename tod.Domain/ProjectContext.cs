@@ -47,11 +47,6 @@ namespace Tod.Domain
                 .WithMany()
                 .HasForeignKey(c => c.UserId);
 
-            //builder.Entity<Reaction>()
-            //    .HasOne<Commentary>()
-            //    .WithMany()
-            //    .HasForeignKey(r => r.)
-
             builder.Entity<UserTag>()
                 .HasOne<User>()
                 .WithMany()
@@ -83,10 +78,17 @@ namespace Tod.Domain
                 .HasOne<User>()
                 .WithMany()
                 .HasForeignKey(u => u.UserId);
-            builder.Entity<UserReport>()
-                .HasOne<Report>()
-                .WithOne();
-            
+
+            builder.Entity<TopicReport>()
+                .HasOne<Topic>()
+                .WithMany()
+                .HasForeignKey(u => u.TopicId);
+
+            builder.Entity<CommentaryReport>()
+                .HasOne<Commentary>()
+                .WithMany()
+                .HasForeignKey(u => u.CommentaryId);
+
             builder.Entity<TopicReaction>()
                 .HasOne<Topic>()
                 .WithMany()
