@@ -9,4 +9,3 @@ namespace Tod.Domain.Models.Enums
 		Other = 4
 	}
 }
-

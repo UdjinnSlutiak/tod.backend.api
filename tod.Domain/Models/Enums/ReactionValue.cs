@@ -6,4 +6,3 @@
 		Positive = 1
 	}
 }
-

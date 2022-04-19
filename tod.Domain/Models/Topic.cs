@@ -1,4 +1,5 @@
-﻿using Tod.Domain.Models.Enums;
+﻿using System;
+using Tod.Domain.Models.Enums;
 
 namespace Tod.Domain.Models
 {
