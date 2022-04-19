@@ -11,6 +11,9 @@
     <None Remove="Errors\" />
     <None Remove="Abstractions\" />
     <None Remove="Implementations\" />
+    <None Remove="Jwt\" />
+    <None Remove="Microsoft.EntityFrameworkCore" />
+    <None Remove="Newtonsoft.Json" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Requests\" />
@@ -18,5 +21,10 @@
     <Folder Include="Exceptions\" />
     <Folder Include="Abstractions\" />
     <Folder Include="Implementations\" />
+    <Folder Include="Jwt\" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
 </Project>
