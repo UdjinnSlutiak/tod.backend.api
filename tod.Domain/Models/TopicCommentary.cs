@@ -6,4 +6,3 @@
         public int CommentaryId { get; set; }
     }
 }
-

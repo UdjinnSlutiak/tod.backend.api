@@ -6,4 +6,3 @@
         public int TopicId { get; set; }
     }
 }
-

@@ -6,4 +6,3 @@
         public int ReportId { get; set; }
     }
 }
-

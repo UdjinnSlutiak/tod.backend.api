@@ -7,4 +7,3 @@
 		Administrator = 3
 	}
 }
-
