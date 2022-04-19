@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using tod.Domain;
+using Tod.Domain;
 
 var builder = WebApplication.CreateBuilder(args);
 
