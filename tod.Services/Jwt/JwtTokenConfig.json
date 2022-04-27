@@ -1,9 +1,0 @@
-﻿{
-  "JwtConfiguration": {
-    "Secret": "secret",
-    "Issuer": "issuer",
-    "Audience": "audience",
-    "AccessTokenExpiresInMinutes": 20,
-    "RefreshTokenExpiresInMinutes": 30
-  }
-}

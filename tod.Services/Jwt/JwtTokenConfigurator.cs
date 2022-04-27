@@ -1,7 +1,5 @@
 ﻿using System;
-using System.IO;
 using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
 
 namespace Tod.Services.Jwt
 {
@@ -9,24 +7,18 @@ namespace Tod.Services.Jwt
 	{
 		public static IServiceCollection AddJwtTokenConfiguration(this IServiceCollection services, out JwtTokenConfiguration jwtConfiguration)
         {
-			using (var reader = new StreamReader("JwtTokenConfig.json"))
-            {
-				var configJson = reader.ReadToEndAsync().Result;
-				var config = JsonConvert.DeserializeObject<JwtTokenConfiguration>(configJson);
+			jwtConfiguration = new JwtTokenConfiguration()
+			{
+				Secret = Environment.GetEnvironmentVariable("TOD_JWT_SECRET"),
+				Issuer = Environment.GetEnvironmentVariable("TOD_JWT_ISSUER"),
+				Audience = Environment.GetEnvironmentVariable("TOD_JWT_AUDIENCE"),
+				AccessTokenExpiresInMinutes = int.TryParse(Environment.GetEnvironmentVariable("TOD_JWT_AT_EXPIRATION"), out int accExpiration) ? accExpiration : 20,
+				RefreshTokenExpiresInMinutes = int.TryParse(Environment.GetEnvironmentVariable("TOD_JWT_RT_EXPIRATION"), out int refExpiration) ? refExpiration : 30,
+			};
 
-				jwtConfiguration = new JwtTokenConfiguration()
-				{
-					Secret = config.Secret,
-					Issuer = config.Issuer,
-					Audience = config.Audience,
-					AccessTokenExpiresInMinutes = config.AccessTokenExpiresInMinutes,
-					RefreshTokenExpiresInMinutes = config.RefreshTokenExpiresInMinutes
-				};
+			services.AddSingleton(jwtConfiguration);
 
-				services.AddSingleton(jwtConfiguration);
-
-				return services;
-			}
+			return services;
         }
 	}
 }

@@ -6,8 +6,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using StackExchange.Redis;
 using Tod.Domain;
+using Tod.Domain.Models;
+using Tod.Domain.Repositories.Abstractions;
+using Tod.Domain.Repositories.Realisations.Sql;
 using Tod.Services.Jwt;
+using Tod.Services.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -42,7 +47,35 @@ services.AddAuthentication(options =>
     };
 });
 
+services.AddRedisConfiguration(out var redisConfig);
+
+services.AddStackExchangeRedisCache(options =>
+{
+    options.InstanceName = redisConfig.InstanceName;
+    options.ConfigurationOptions = new ConfigurationOptions
+    {
+        AllowAdmin = true,
+        EndPoints =
+        {
+            {
+                redisConfig.Address,
+                redisConfig.Port
+            }
+        },
+        Password = redisConfig.Password,
+        ConnectRetry = 5,
+        ReconnectRetryPolicy = new LinearRetry(1500),
+        AbortOnConnectFail = false,
+        ConnectTimeout = 5000,
+        SyncTimeout = 5000
+    };
+});
+
 services.AddControllers();
+
+services.AddTransient<IRepository<User>, SqlBaseRepository<User>>();
+services.AddTransient<IRepository<Topic>, SqlBaseRepository<Topic>>();
+services.AddTransient<IRepository<Commentary>, SqlBaseRepository<Commentary>>();
 
 // services.AddSwaggerGen();
 
