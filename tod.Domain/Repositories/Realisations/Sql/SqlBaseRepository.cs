@@ -4,12 +4,12 @@ using Tod.Domain.Repositories.Abstractions;
 
 namespace Tod.Domain.Repositories.Realisations.Sql
 {
-    public class SqlRepository<T> : IRepository<T>
+    public class SqlBaseRepository<T> : IRepository<T>
         where T : class
     {
         private readonly ProjectContext context;
 
-        public SqlRepository(ProjectContext context)
+        public SqlBaseRepository(ProjectContext context)
         {
             this.context = context;
         }

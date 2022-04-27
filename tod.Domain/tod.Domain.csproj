@@ -14,6 +14,7 @@
     <None Remove="Repositories\Realisations\" />
     <None Remove="Models\Enums\" />
     <None Remove="Repositories\Realisations\Sql\" />
+    <None Remove="Models\Dtos\" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.3" />
@@ -26,5 +27,6 @@
     <Folder Include="Repositories\Realisations\" />
     <Folder Include="Models\Enums\" />
     <Folder Include="Repositories\Realisations\Sql\" />
+    <Folder Include="Models\Dtos\" />
   </ItemGroup>
 </Project>

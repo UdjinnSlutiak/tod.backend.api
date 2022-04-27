@@ -5,6 +5,7 @@
     <RootNamespace>Tod.Services</RootNamespace>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' " />
   <ItemGroup>
     <None Remove="Requests\" />
     <None Remove="Responses\" />
@@ -14,6 +15,8 @@
     <None Remove="Jwt\" />
     <None Remove="Microsoft.EntityFrameworkCore" />
     <None Remove="Newtonsoft.Json" />
+    <None Remove="Redis\" />
+    <None Remove="StackExchange.Redis" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Requests\" />
@@ -22,9 +25,13 @@
     <Folder Include="Abstractions\" />
     <Folder Include="Implementations\" />
     <Folder Include="Jwt\" />
+    <Folder Include="Redis\" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.3" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\tod.Domain\tod.Domain.csproj" />
   </ItemGroup>
 </Project>
