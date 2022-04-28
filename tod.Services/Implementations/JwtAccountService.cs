@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading;
 using System.Threading.Tasks;
 using Tod.Domain.Models;
 using Tod.Domain.Models.Dtos;
@@ -8,7 +7,6 @@ using Tod.Domain.Repositories.Abstractions;
 using Tod.Services.Abstractions;
 using Tod.Services.Exceptions;
 using Tod.Services.Jwt;
-using Tod.Services.Redis;
 using Tod.Services.Requests;
 using Tod.Services.Responses;
 
@@ -60,13 +58,13 @@ namespace Tod.Services.Implementations
             return new UserDto(user);
         }
 
-        public async Task<LoginResponse> LoginUserAsync(string login, string password)
+        public async Task<LoginResponse> LoginUserAsync(LoginRequest request)
         {
-            var user = await this.userRepository.GetUserByEmailAsync(login);
+            var user = await this.userRepository.GetUserByEmailAsync(request.Login);
 
             if (user == null)
             {
-                user = await this.userRepository.GetUserByUsernameAsync(login);
+                user = await this.userRepository.GetUserByUsernameAsync(request.Login);
 
                 if (user == null)
                 {
@@ -74,9 +72,9 @@ namespace Tod.Services.Implementations
                 }
             }
 
-            var passrowdMatch = this.passwordHasher.VerifyPassword(password, user.PasswordHash);
+            var passwordMatch = this.passwordHasher.VerifyPassword(request.Password, user.PasswordHash);
 
-            if (!passrowdMatch)
+            if (!passwordMatch)
             {
                 throw new PasswordMismatchException();
             }
@@ -102,7 +100,7 @@ namespace Tod.Services.Implementations
             };
         }
 
-        public async Task<UserDto> RegisterUserAsync(RegisterRequest request)
+        public async Task<User> RegisterUserAsync(RegisterRequest request)
         {
             var user = await this.userRepository.GetUserByEmailAsync(request.Email);
 
@@ -130,7 +128,18 @@ namespace Tod.Services.Implementations
 
             await this.userRepository.CreateAsync(user);
 
-            return new UserDto(user);
+            return user;
+        }
+
+        public async Task<LoginResponse> RefreshTokenAsync(RefreshTokenRequest request)
+        {
+            var tokensOwner = await this.tokenService.ValidateTokenRefreshing(request.AccessToken, request.RefreshToken);
+
+            await this.redisService.DeleteAsync(request.AccessToken, tokensOwner.PasswordHash.GetHashCode());
+
+            var loginResponse = await this.LoginUserAsync(tokensOwner);
+
+            return loginResponse;
         }
     }
 }
