@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using StackExchange.Redis;
 using Tod.Domain;
 using Tod.Domain.Models;
@@ -87,11 +88,17 @@ services.AddTransient<IUserService, UserService>();
 services.AddTransient<IRedisService, RedisService>();
 services.AddTransient<IPasswordHasher, Rfc2898PasswordHasher>();
 
-// services.AddSwaggerGen();
+services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo { Title = "tod Backend API", Version = "v1" });
+});
 
 // Building web application and adding all necessary middlewares
 
 var app = builder.Build();
+
+app.UseSwagger();
+app.UseSwaggerUI(options => options.SwaggerEndpoint("/swagger/v1/swagger.json", "tod Backend API"));
 
 app.UseHttpsRedirection();
 
