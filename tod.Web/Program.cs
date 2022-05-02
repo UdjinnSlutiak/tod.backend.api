@@ -11,6 +11,8 @@ using Tod.Domain;
 using Tod.Domain.Models;
 using Tod.Domain.Repositories.Abstractions;
 using Tod.Domain.Repositories.Realisations.Sql;
+using Tod.Services.Abstractions;
+using Tod.Services.Implementations;
 using Tod.Services.Jwt;
 using Tod.Services.Redis;
 
@@ -76,6 +78,14 @@ services.AddControllers();
 services.AddTransient<IRepository<User>, SqlBaseRepository<User>>();
 services.AddTransient<IRepository<Topic>, SqlBaseRepository<Topic>>();
 services.AddTransient<IRepository<Commentary>, SqlBaseRepository<Commentary>>();
+
+services.AddTransient<IUserRepository, SqlUserRepository>();
+
+services.AddTransient<IAccountService, JwtAccountService>();
+services.AddTransient<ITokenService, JwtTokenService>();
+services.AddTransient<IUserService, UserService>();
+services.AddTransient<IRedisService, RedisService>();
+services.AddTransient<IPasswordHasher, Rfc2898PasswordHasher>();
 
 // services.AddSwaggerGen();
 
