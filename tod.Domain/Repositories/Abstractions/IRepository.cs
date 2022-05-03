@@ -11,8 +11,8 @@ namespace Tod.Domain.Repositories.Abstractions
 
 		public Task<T> CreateAsync(T entity);
 
-		public T Update(T entity);
+		public Task<T> UpdateAsync(T entity);
 
-		public void Delete(int id);
+		public Task DeleteAsync(int id);
 	}
 }

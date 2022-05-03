@@ -27,18 +27,23 @@ namespace Tod.Domain.Repositories.Realisations.Sql
         public async Task<T> CreateAsync(T entity)
         {
             await this.context.AddAsync(entity);
+            await this.context.SaveChangesAsync();
+
             return entity;
         }
 
-        public T Update(T entity)
+        public async Task<T> UpdateAsync(T entity)
         {
             this.context.Update(entity);
+            await this.context.SaveChangesAsync();
+
             return entity;
         }
 
-        public void Delete(int id)
+        public async Task DeleteAsync(int id)
         {
             this.context.Remove(id);
+            await this.context.SaveChangesAsync();
         }
     }
 }
