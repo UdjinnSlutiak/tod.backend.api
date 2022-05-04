@@ -10,6 +10,7 @@ namespace Tod.Services.Abstractions
 	{
 		public Task<UserDto> GetUserByEmailAsync(string email);
 		public Task<UserDto> GetUserByUsernameAsync(string username);
+		public Task<UserDto> GetUserByIdAsync(int id);
 		public Task<User> RegisterUserAsync(RegisterRequest request);
 		public Task<LoginResponse> LoginUserAsync(LoginRequest request);
 		public Task<LoginResponse> LoginUserAsync(User user);

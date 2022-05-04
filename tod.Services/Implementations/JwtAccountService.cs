@@ -58,6 +58,18 @@ namespace Tod.Services.Implementations
             return new UserDto(user);
         }
 
+        public async Task<UserDto> GetUserByIdAsync(int id)
+        {
+            var user = await this.userRepository.GetAsync(id);
+
+            if (user == null)
+            {
+                throw new NotFoundException();
+            }
+
+            return new UserDto(user);
+        }
+
         public async Task<LoginResponse> LoginUserAsync(LoginRequest request)
         {
             var user = await this.userRepository.GetUserByEmailAsync(request.Login);
