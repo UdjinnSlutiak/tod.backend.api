@@ -4,10 +4,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Tod.Domain.Models;
+using Tod.Domain.Models.Dtos;
 using Tod.Services.Abstractions;
 using Tod.Services.Exceptions;
 using Tod.Services.Requests;
 using Tod.Services.Responses;
+using Tod.Web.Extensions;
 
 namespace Tod.Web.Controllers
 {
@@ -68,6 +70,29 @@ namespace Tod.Web.Controllers
 			catch (PasswordMismatchException)
             {
 				return Unauthorized("Wrong password.");
+            }
+        }
+
+		[HttpGet("me")]
+		[ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
+		[ProducesResponseType(typeof(string), StatusCodes.Status401Unauthorized)]
+		public async Task<ActionResult<UserDto>> GetMe()
+        {
+			try
+            {
+				var currentUserId = HttpContext.GetCurrentUserId();
+
+				var user = await this.accountService.GetUserByIdAsync(currentUserId);
+
+				return user;
+            }
+			catch (NotFoundException)
+            {
+				return Unauthorized("User with such Id does not exist.");
+            }
+			catch (InvalidTokenException)
+            {
+				return Unauthorized("Invalid access token.");
             }
         }
 	}
