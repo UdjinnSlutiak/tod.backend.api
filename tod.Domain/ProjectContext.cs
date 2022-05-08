@@ -100,37 +100,37 @@ namespace Tod.Domain
                 .HasForeignKey(c => c.CommentaryId);
 
             builder.Entity<UserTopic>()
-                .HasNoKey();
+                .HasKey(ut => new { ut.UserId, ut.TopicId });
 
             builder.Entity<UserCommentary>()
-                .HasNoKey();
+                .HasKey(uc => new { uc.UserId, uc.CommentaryId });
 
             builder.Entity<TopicCommentary>()
-                .HasNoKey();
+                .HasKey(tc => new { tc.TopicId, tc.CommentaryId });
 
             builder.Entity<TopicReaction>()
-                .HasNoKey();
+                .HasKey(tr => new { tr.TopicId, tr.ReactionId });
 
             builder.Entity<TopicReport>()
-                .HasNoKey();
+                .HasKey(tr => new { tr.TopicId, tr.ReportId });
 
             builder.Entity<TopicTag>()
-                .HasNoKey();
+                .HasKey(tt => new { tt.TopicId, tt.TagId });
 
             builder.Entity<CommentaryReaction>()
-                .HasNoKey();
+                .HasKey(cr => new { cr.CommentaryId, cr.ReactionId });
 
             builder.Entity<CommentaryReport>()
-                .HasNoKey();
-            
+                .HasKey(cr => new { cr.CommentaryId, cr.ReportId });
+
             builder.Entity<FavoriteTopic>()
-                .HasNoKey();
-            
+                .HasKey(ft => new { ft.UserId, ft.TopicId });
+
             builder.Entity<UserReport>()
-                .HasNoKey();
-            
+                .HasKey(ur => new { ur.UserId, ur.ReportId });
+
             builder.Entity<UserTag>()
-                .HasNoKey();
+                .HasKey(ut => new { ut.UserId, ut.TagId });
         }
     }
 }

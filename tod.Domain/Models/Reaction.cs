@@ -8,7 +8,6 @@ namespace Tod.Domain.Models
         public int Id { get; set; }
         public int UserId { get; set; }
         public ReactionValue ReactionValue { get; set; }
-        public ReactionType ReactionType { get; set; }
-        public DateTime Created { get; set; }
+        public DateTime CreatedUtc { get; set; }
     }
 }

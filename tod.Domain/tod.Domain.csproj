@@ -11,9 +11,7 @@
     <None Remove="Models\" />
     <None Remove="Repositories\" />
     <None Remove="Repositories\Abstractions\" />
-    <None Remove="Repositories\Realisations\" />
     <None Remove="Models\Enums\" />
-    <None Remove="Repositories\Realisations\Sql\" />
     <None Remove="Models\Dtos\" />
   </ItemGroup>
   <ItemGroup>
@@ -24,9 +22,7 @@
     <Folder Include="Models\" />
     <Folder Include="Repositories\" />
     <Folder Include="Repositories\Abstractions\" />
-    <Folder Include="Repositories\Realisations\" />
     <Folder Include="Models\Enums\" />
-    <Folder Include="Repositories\Realisations\Sql\" />
     <Folder Include="Models\Dtos\" />
   </ItemGroup>
 </Project>

@@ -94,7 +94,7 @@ namespace Tod.Services.Implementations
             }
 
             var userId = int.Parse(claimsPrincipal.Claims.First(c => c.Type == "UserId").Value);
-            var user = await this.userService.GetUserByIdAsync(userId);
+            var user = await this.userService.GetByIdAsync(userId);
 
             if (user == null)
             {
