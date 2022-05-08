@@ -11,17 +11,34 @@ namespace Tod.Services.Implementations
 	{
         private readonly IReactionRepository reactionRepository;
         private readonly ITopicReactionRepository topicReactionRepository;
+        private readonly ICommentaryReactionRepository commentaryReactionRepository;
      
 		public ReactionService(ITopicReactionRepository topicReactionRepository,
-            IReactionRepository reactionRepository)
+            IReactionRepository reactionRepository,
+            ICommentaryReactionRepository commentaryReactionRepository)
 		{
             this.reactionRepository = reactionRepository;
             this.topicReactionRepository = topicReactionRepository;
+            this.commentaryReactionRepository = commentaryReactionRepository;
 		}
 
-        public async Task<List<Reaction>> GetReactionsByTopicIdAsync(int topicId)
+        public async Task<List<Reaction>> GetByTopicIdAsync(int topicId)
         {
             var reactionsIds = this.topicReactionRepository.GetByTopicId(topicId);
+
+            var reactions = new List<Reaction>();
+            foreach (var reactionId in reactionsIds)
+            {
+                var reaction = await this.reactionRepository.GetAsync(reactionId);
+                reactions.Add(reaction);
+            }
+
+            return reactions;
+        }
+
+        public async Task<List<Reaction>> GetByCommentaryIdAsync(int commentaryId)
+        {
+            var reactionsIds = this.commentaryReactionRepository.GetByCommentaryId(commentaryId);
 
             var reactions = new List<Reaction>();
             foreach (var reactionId in reactionsIds)

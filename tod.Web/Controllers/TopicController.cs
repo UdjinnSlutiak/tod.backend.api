@@ -32,7 +32,7 @@ namespace Tod.Web.Controllers
         {
 			try
             {
-				var response = await this.topicService.GetTopicByIdAsync(id);
+				var response = await this.topicService.GetTopicDataByIdAsync(id);
 
 				return response;
             }
@@ -64,7 +64,7 @@ namespace Tod.Web.Controllers
         {
 			try
             {
-				var userId = HttpContext.GetCurrentUserId();
+				var userId = base.HttpContext.GetCurrentUserId();
 
 				var response = await this.topicService.CreateAsync(request, userId);
 

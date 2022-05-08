@@ -86,16 +86,21 @@ services.AddTransient<IRepository<TopicTag>, SqlBaseRepository<TopicTag>>();
 
 services.AddTransient<IUserRepository, SqlUserRepository>();
 services.AddTransient<ITopicRepository, SqlTopicRepository>();
+services.AddTransient<ICommentaryRepository, SqlCommentaryRepository>();
 services.AddTransient<IReactionRepository, SqlReactionRepository>();
 services.AddTransient<ITagRepository, SqlTagRepository>();
 services.AddTransient<IUserTopicRepository, SqlUserTopicRepository>();
 services.AddTransient<ITopicTagRepository, SqlTopicTagRepository>();
 services.AddTransient<ITopicReactionRepository, SqlTopicReactionRepository>();
+services.AddTransient<ITopicCommentaryRepository, SqlTopicCommentaryRepository>();
+services.AddTransient<IUserCommentaryRepository, SqlUserCommentaryRepository>();
+services.AddTransient<ICommentaryReactionRepository, SqlCommentaryReactionRepository>();
 
 services.AddTransient<IAccountService, JwtAccountService>();
 services.AddTransient<ITokenService, JwtTokenService>();
 services.AddTransient<IUserService, UserService>();
 services.AddTransient<ITopicService, TopicService>();
+services.AddTransient<ICommentaryService, CommentaryService>();
 services.AddTransient<ITagService, TagService>();
 services.AddTransient<IReactionService, ReactionService>();
 services.AddTransient<IRedisService, RedisService>();

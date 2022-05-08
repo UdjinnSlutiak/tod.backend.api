@@ -37,7 +37,12 @@ namespace Tod.Services.Implementations
             this.reactionService = reactionService;
 		}
 
-        public async Task<TopicData> GetTopicByIdAsync(int id)
+        public async Task<Topic> GetByIdAsync(int topicId)
+        {
+            return await this.topicRepository.GetAsync(topicId);
+        }
+
+        public async Task<TopicData> GetTopicDataByIdAsync(int id)
         {
             var topic = await this.topicRepository.GetAsync(id);
 
@@ -62,7 +67,7 @@ namespace Tod.Services.Implementations
 
             var tags = (await this.tagService.GetByTopicIdAsync(id)).ToList();
 
-            var reactions = await this.reactionService.GetReactionsByTopicIdAsync(id);
+            var reactions = await this.reactionService.GetByTopicIdAsync(id);
 
             var positive = reactions.Where(r => r.ReactionValue == ReactionValue.Positive).Count();
             var negative = reactions.Count - positive;
@@ -96,7 +101,7 @@ namespace Tod.Services.Implementations
 
                 var tags = (await this.tagService.GetByTopicIdAsync(topic.Id)).ToList();
 
-                var reactions = await this.reactionService.GetReactionsByTopicIdAsync(topic.Id);
+                var reactions = await this.reactionService.GetByTopicIdAsync(topic.Id);
 
                 var positive = reactions.Where(r => r.ReactionValue == ReactionValue.Positive).Count();
                 var negative = reactions.Count - positive;
