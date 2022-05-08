@@ -7,7 +7,8 @@ namespace Tod.Services.Abstractions
 {
 	public interface IReactionService
 	{
-		public Task<List<Reaction>> GetReactionsByTopicIdAsync(int topicId);
+		public Task<List<Reaction>> GetByTopicIdAsync(int topicId);
+		public Task<List<Reaction>> GetByCommentaryIdAsync(int commentaryId);
 	}
 }
 

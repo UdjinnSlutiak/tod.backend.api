@@ -8,7 +8,8 @@ namespace Tod.Services.Abstractions
 {
 	public interface ITopicService
 	{
-		public Task<TopicData> GetTopicByIdAsync(int id);
+		public Task<Topic> GetByIdAsync(int topicId);
+		public Task<TopicData> GetTopicDataByIdAsync(int id);
 		public Task<GetTopicsResponse> GetTopicsAsync(int skip, int offset);
 		public Task<CreateTopicResponse> CreateAsync(CreateTopicRequest request, int userId);
 	}

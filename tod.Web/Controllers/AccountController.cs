@@ -80,7 +80,7 @@ namespace Tod.Web.Controllers
         {
 			try
             {
-				var currentUserId = HttpContext.GetCurrentUserId();
+				var currentUserId = base.HttpContext.GetCurrentUserId();
 
 				var user = await this.accountService.GetUserByIdAsync(currentUserId);
 
