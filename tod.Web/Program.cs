@@ -12,6 +12,7 @@ using StackExchange.Redis;
 using Tod.Domain;
 using Tod.Domain.Models;
 using Tod.Domain.Repositories.Abstractions;
+using Tod.Domain.Repositories.Implementations.Sql;
 using Tod.Domain.Repositories.Realisations.Sql;
 using Tod.Services.Abstractions;
 using Tod.Services.Implementations;
@@ -80,12 +81,23 @@ services.AddControllers();
 services.AddTransient<IRepository<User>, SqlBaseRepository<User>>();
 services.AddTransient<IRepository<Topic>, SqlBaseRepository<Topic>>();
 services.AddTransient<IRepository<Commentary>, SqlBaseRepository<Commentary>>();
+services.AddTransient<IRepository<UserTopic>, SqlBaseRepository<UserTopic>>();
+services.AddTransient<IRepository<TopicTag>, SqlBaseRepository<TopicTag>>();
 
 services.AddTransient<IUserRepository, SqlUserRepository>();
+services.AddTransient<ITopicRepository, SqlTopicRepository>();
+services.AddTransient<IReactionRepository, SqlReactionRepository>();
+services.AddTransient<ITagRepository, SqlTagRepository>();
+services.AddTransient<IUserTopicRepository, SqlUserTopicRepository>();
+services.AddTransient<ITopicTagRepository, SqlTopicTagRepository>();
+services.AddTransient<ITopicReactionRepository, SqlTopicReactionRepository>();
 
 services.AddTransient<IAccountService, JwtAccountService>();
 services.AddTransient<ITokenService, JwtTokenService>();
 services.AddTransient<IUserService, UserService>();
+services.AddTransient<ITopicService, TopicService>();
+services.AddTransient<ITagService, TagService>();
+services.AddTransient<IReactionService, ReactionService>();
 services.AddTransient<IRedisService, RedisService>();
 services.AddTransient<IPasswordHasher, Rfc2898PasswordHasher>();
 

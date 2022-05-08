@@ -20,12 +20,12 @@ namespace Tod.Domain.Repositories.Realisations.Sql
 
         public async Task<User> GetUserByEmailAsync(string email)
         {
-            return await this.context.Set<User>().Where(u => u.Email == email).FirstOrDefaultAsync();
+            return await this.context.Set<User>().FirstOrDefaultAsync(u => u.Email == email);
         }
 
         public async Task<User> GetUserByUsernameAsync(string username)
         {
-            return await this.context.Set<User>().Where(u => u.Username == username).FirstOrDefaultAsync();
+            return await this.context.Set<User>().FirstOrDefaultAsync(u => u.Username == username);
         }
     }
 }

@@ -37,13 +37,13 @@ namespace Tod.Web.Controllers
             {
 				user = await this.accountService.RegisterUserAsync(request);
             }
-			catch (EmailAlreadyTakenException)
+			catch (EmailAlreadyTakenException ex)
             {
-				return BadRequest("User with such email already exists.");
+				return BadRequest(ex.Message);
             }
-			catch (UsernameAlreadyTakenException)
+			catch (UsernameAlreadyTakenException ex)
             {
-				return BadRequest("User with such username already exists.");
+				return BadRequest(ex.Message);
             }
 
 			var response = await this.accountService.LoginUserAsync(user);
@@ -63,13 +63,13 @@ namespace Tod.Web.Controllers
 
 				return response;
             }
-			catch (NotFoundException)
+			catch (NotFoundException ex)
             {
-				return Unauthorized("User with such email does not registered in the system.");
+				return Unauthorized(ex.Message);
             }
-			catch (PasswordMismatchException)
+			catch (PasswordMismatchException ex)
             {
-				return Unauthorized("Wrong password.");
+				return Unauthorized(ex.Message);
             }
         }
 
@@ -86,13 +86,13 @@ namespace Tod.Web.Controllers
 
 				return user;
             }
-			catch (NotFoundException)
+			catch (InvalidTokenException ex)
+			{
+				return Unauthorized(ex.Message);
+			}
+			catch (NotFoundException ex)
             {
-				return Unauthorized("User with such Id does not exist.");
-            }
-			catch (InvalidTokenException)
-            {
-				return Unauthorized("Invalid access token.");
+				return Unauthorized( ex.Message);
             }
         }
 	}

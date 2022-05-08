@@ -15,7 +15,7 @@ namespace Tod.Services.Implementations
             this.userRepository = userRepository;
 		}
 
-        public async Task<User> GetUserByIdAsync(int id)
+        public async Task<User> GetByIdAsync(int id)
         {
             return await this.userRepository.GetAsync(id);
         }
