@@ -13,7 +13,7 @@ namespace Tod.Web.Controllers
 {
 	[Authorize]
 	[ApiController]
-	[Route("api/topic/{topicId}/commentaries")]
+	[Route("api/topics/{topicId}/commentaries")]
 	public class CommentaryController : ControllerBase
 	{
 		private readonly ICommentaryService commentaryService;
@@ -36,6 +36,7 @@ namespace Tod.Web.Controllers
 		[HttpPost]
 		[ProducesResponseType(typeof(CommentaryData), StatusCodes.Status200OK)]
 		[ProducesResponseType(typeof(string), StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
 		public async Task<ActionResult<CommentaryData>> CreateCommentaryAsync([FromRoute] int topicId,
 			[FromBody] CreateCommentaryRequest request)
         {
@@ -54,6 +55,10 @@ namespace Tod.Web.Controllers
 			catch (NotFoundException ex)
             {
 				return Unauthorized(ex.Message);
+            }
+			catch (BannedContentException ex)
+            {
+				return NotFound(ex.Message);
             }
         }
 	}

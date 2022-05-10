@@ -23,9 +23,9 @@ namespace Tod.Domain
         public DbSet<UserReport> UserReports { get; set; }
         public DbSet<TopicTag> TopicTags { get; set; }
         public DbSet<TopicReport> TopicReports { get; set; }
-        public DbSet<TopicReaction> TopicReactions { get; set; }
+        public DbSet<UserTopicReaction> UserTopicReactions { get; set; }
         public DbSet<CommentaryReport> CommentaryReports { get; set; }
-        public DbSet<CommentaryReaction> CommentaryReactions { get; set; }
+        public DbSet<UserCommentaryReaction> UserCommentaryReactions { get; set; }
         public DbSet<UserTopic> UserTopics { get; set; }
         public DbSet<UserCommentary> UserCommentaries { get; set; }
         public DbSet<TopicCommentary> TopicCommentaries { get; set; }
@@ -89,12 +89,12 @@ namespace Tod.Domain
                 .WithMany()
                 .HasForeignKey(u => u.CommentaryId);
 
-            builder.Entity<TopicReaction>()
+            builder.Entity<UserTopicReaction>()
                 .HasOne<Topic>()
                 .WithMany()
                 .HasForeignKey(t => t.TopicId);
 
-            builder.Entity<CommentaryReaction>()
+            builder.Entity<UserCommentaryReaction>()
                 .HasOne<Commentary>()
                 .WithMany()
                 .HasForeignKey(c => c.CommentaryId);
@@ -108,8 +108,8 @@ namespace Tod.Domain
             builder.Entity<TopicCommentary>()
                 .HasKey(tc => new { tc.TopicId, tc.CommentaryId });
 
-            builder.Entity<TopicReaction>()
-                .HasKey(tr => new { tr.TopicId, tr.ReactionId });
+            builder.Entity<UserTopicReaction>()
+                .HasKey(tr => new { tr.UserId, tr.TopicId, tr.ReactionId });
 
             builder.Entity<TopicReport>()
                 .HasKey(tr => new { tr.TopicId, tr.ReportId });
@@ -117,8 +117,8 @@ namespace Tod.Domain
             builder.Entity<TopicTag>()
                 .HasKey(tt => new { tt.TopicId, tt.TagId });
 
-            builder.Entity<CommentaryReaction>()
-                .HasKey(cr => new { cr.CommentaryId, cr.ReactionId });
+            builder.Entity<UserCommentaryReaction>()
+                .HasKey(cr => new { cr.UserId, cr.CommentaryId, cr.ReactionId });
 
             builder.Entity<CommentaryReport>()
                 .HasKey(cr => new { cr.CommentaryId, cr.ReportId });

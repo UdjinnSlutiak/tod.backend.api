@@ -1,7 +1,8 @@
 ﻿namespace Tod.Domain.Models
 {
-	public class TopicReaction
+	public class UserTopicReaction
 	{
+        public int UserId { get; set; }
         public int TopicId { get; set; }
         public int ReactionId { get; set; }
     }

@@ -7,6 +7,7 @@ namespace Tod.Services.Abstractions
 	public interface IUserService
 	{
 		public Task<User> GetByIdAsync(int id);
+		public Task<User> UpdateAsync(User user);
 	}
 }
 

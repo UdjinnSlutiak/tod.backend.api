@@ -83,6 +83,48 @@ namespace Tod.Web.Controllers
 				return BadRequest(ex.Message);
             }
         }
+
+		[HttpPost("{id}/favorites")]
+		[ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+		[ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(typeof(string), StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+		public async Task<ActionResult> AddToFavoritesAsync(int id)
+        {
+			try
+            {
+				int userId = base.HttpContext.GetCurrentUserId();
+
+				var addedToFavorites = await this.topicService.AddToFavoritesAsync(id, userId);
+
+				if (!addedToFavorites)
+                {
+					return BadRequest();
+                }
+
+				return Ok();
+            }
+			catch (NotFoundException ex)
+            {
+				return Unauthorized(ex.Message);
+            }
+			catch (InvalidTokenException ex)
+            {
+				return Unauthorized(ex.Message);
+            }
+			catch (BannedContentException ex)
+            {
+				return NotFound(ex.Message);
+            }
+			catch (TopicAlreadyInFavoritesException ex)
+            {
+				return BadRequest(ex.Message);
+            }
+			catch (ContentBelongsToYouException ex)
+            {
+				return BadRequest(ex.Message);
+            }
+        }
 	}
 }
 

@@ -36,6 +36,11 @@ namespace Tod.Services.Implementations
             this.reactionService = reactionService;
 		}
 
+        public async Task<Commentary> GetByIdAsync(int id)
+        {
+            return await this.commentaryRepository.GetAsync(id);
+        }
+
         public async Task<GetCommentariesResponse> GetCommentariesAsync(int topicId)
         {
             var commentariesIds = this.topicCommentaryRepository.GetCommentariesIdByTopicId(topicId);
@@ -79,11 +84,21 @@ namespace Tod.Services.Implementations
                 throw new NotFoundException("User");
             }
 
+            if (user.Status == ContentStatus.Banned)
+            {
+                throw new BannedContentException("author");
+            }
+
             var topic = await this.topicService.GetByIdAsync(topicId);
 
             if (topic == null)
             {
                 throw new NotFoundException("Topic");
+            }
+
+            if (topic.Status == ContentStatus.Banned)
+            {
+                throw new BannedContentException("topic");
             }
 
             var commentary = new Commentary

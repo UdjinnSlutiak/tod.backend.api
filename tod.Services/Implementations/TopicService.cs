@@ -18,6 +18,7 @@ namespace Tod.Services.Implementations
         private readonly ITopicRepository topicRepository;
         private readonly IRepository<TopicTag> topicTagRepository;
         private readonly IUserTopicRepository userTopicRepository;
+        private readonly IFavoriteRepository favoriteRepository;
         private readonly IUserService userService;
         private readonly ITagService tagService;
         private readonly IReactionService reactionService;
@@ -25,6 +26,7 @@ namespace Tod.Services.Implementations
         public TopicService(ITopicRepository topicRepository,
             IRepository<TopicTag> topicTagRepository,
             IUserTopicRepository userTopicRepository,
+            IFavoriteRepository favoriteRepository,
             IUserService userService,
             ITagService tagService,
             IReactionService reactionService)
@@ -32,6 +34,7 @@ namespace Tod.Services.Implementations
             this.topicRepository = topicRepository;
             this.topicTagRepository = topicTagRepository;
             this.userTopicRepository = userTopicRepository;
+            this.favoriteRepository = favoriteRepository;
             this.userService = userService;
             this.tagService = tagService;
             this.reactionService = reactionService;
@@ -97,7 +100,7 @@ namespace Tod.Services.Implementations
             {
                 var authorId = await this.userTopicRepository.GetUserIdByTopicIdAsync(topic.Id);
 
-                var user = await this.userService.GetByIdAsync(authorId);
+                var author = await this.userService.GetByIdAsync(authorId);
 
                 var tags = (await this.tagService.GetByTopicIdAsync(topic.Id)).ToList();
 
@@ -111,7 +114,7 @@ namespace Tod.Services.Implementations
                     Id = topic.Id,
                     Title = topic.Title,
                     CreatedUtc = topic.CreatedUtc,
-                    Author = new UserDto(user),
+                    Author = new UserDto(author),
                     Tags = tags,
                     Rating = positive - negative
                 });
@@ -180,6 +183,66 @@ namespace Tod.Services.Implementations
                 CreatedUtc = topic.CreatedUtc,
                 Tags = topicTags
             };
+        }
+
+        public async Task<bool> AddToFavoritesAsync(int topicId, int userId)
+        {
+            var topic = await this.topicRepository.GetAsync(topicId);
+
+            if (topic == null)
+            {
+                throw new NotFoundException("Topic");
+            }
+
+            if (topic.Status == ContentStatus.Banned)
+            {
+                throw new BannedContentException("topic");
+            }
+
+            var user = await this.userService.GetByIdAsync(userId);
+
+            if (user == null)
+            {
+                throw new NotFoundException("User");
+            }
+
+            if (user.Status == ContentStatus.Banned)
+            {
+                throw new BannedContentException("user");
+            }
+
+            var authorId = await this.userTopicRepository.GetUserIdByTopicIdAsync(topicId);
+
+            if (userId == authorId)
+            {
+                throw new ContentBelongsToYouException();
+            }
+
+            var fromFavorites = await this.favoriteRepository.GetByUserIdAndTopicId(userId, topicId);
+
+            if (fromFavorites != null)
+            {
+                throw new TopicAlreadyInFavoritesException();
+            }
+
+            var favorite = new FavoriteTopic
+            {
+                UserId = userId,
+                TopicId = topicId
+            };
+
+            await this.favoriteRepository.CreateAsync(favorite);
+
+            await this.UpdateAuthorRatingAsync(authorId, 1);
+
+            return true;
+        }
+
+        private async Task UpdateAuthorRatingAsync(int authorId, int value)
+        {
+            var author = await this.userService.GetByIdAsync(authorId);
+            author.Rating += 1;
+            await this.userService.UpdateAsync(author);
         }
 
         private async Task CreateTopicTagAsync(int tagId, int topicId)
