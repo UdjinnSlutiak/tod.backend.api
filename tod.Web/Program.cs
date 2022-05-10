@@ -91,10 +91,11 @@ services.AddTransient<IReactionRepository, SqlReactionRepository>();
 services.AddTransient<ITagRepository, SqlTagRepository>();
 services.AddTransient<IUserTopicRepository, SqlUserTopicRepository>();
 services.AddTransient<ITopicTagRepository, SqlTopicTagRepository>();
-services.AddTransient<ITopicReactionRepository, SqlTopicReactionRepository>();
+services.AddTransient<IUserTopicReactionRepository, SqlUserTopicReactionRepository>();
 services.AddTransient<ITopicCommentaryRepository, SqlTopicCommentaryRepository>();
 services.AddTransient<IUserCommentaryRepository, SqlUserCommentaryRepository>();
-services.AddTransient<ICommentaryReactionRepository, SqlCommentaryReactionRepository>();
+services.AddTransient<IUserCommentaryReactionRepository, SqlUserCommentaryReactionRepository>();
+services.AddTransient<IFavoriteRepository, SqlFavoriteRepository>();
 
 services.AddTransient<IAccountService, JwtAccountService>();
 services.AddTransient<ITokenService, JwtTokenService>();
