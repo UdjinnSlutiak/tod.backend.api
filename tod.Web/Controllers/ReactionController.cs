@@ -1,10 +1,12 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Tod.Services.Abstractions;
 using Tod.Services.Exceptions;
 using Tod.Services.Requests;
+using Tod.Services.Responses;
 using Tod.Web.Extensions;
 
 namespace Tod.Web.Controllers
@@ -102,6 +104,60 @@ namespace Tod.Web.Controllers
 			catch (AlreadyReactedException ex)
 			{
 				return BadRequest(ex.Message);
+			}
+		}
+
+		[HttpGet("topics/{id}")]
+		[ProducesResponseType(typeof(ContentReactionData), StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+		public async Task<ActionResult<ContentReactionData>> GetUserTopicReactionAsync(int id)
+        {
+			try
+            {
+				var userId = base.HttpContext.GetCurrentUserId();
+				var response = await this.reactionService.GetUserTopicReactionByTopicId(userId, id);
+
+				return response;
+            }
+			catch (InvalidTokenException ex)
+			{
+				return Unauthorized(ex.Message);
+			}
+			catch (NotFoundException ex)
+			{
+				return Unauthorized(ex.Message);
+			}
+			catch (BannedContentException ex)
+			{
+				return NotFound(ex.Message);
+			}
+		}
+
+		[HttpGet("topics/{id}/commentaries")]
+		[ProducesResponseType(typeof(List<ContentReactionData>), StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+		public async Task<ActionResult<List<ContentReactionData>>> GetUserCommentariesReactionAsync(int id)
+		{
+			try
+			{
+				var userId = base.HttpContext.GetCurrentUserId();
+				var response = await this.reactionService.GetUserCommentariesReactions(userId, id);
+
+				return response;
+			}
+			catch (InvalidTokenException ex)
+			{
+				return Unauthorized(ex.Message);
+			}
+			catch (NotFoundException ex)
+			{
+				return Unauthorized(ex.Message);
+			}
+			catch (BannedContentException ex)
+			{
+				return NotFound(ex.Message);
 			}
 		}
 	}

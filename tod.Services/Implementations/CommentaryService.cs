@@ -43,7 +43,7 @@ namespace Tod.Services.Implementations
 
         public async Task<GetCommentariesResponse> GetCommentariesAsync(int topicId)
         {
-            var commentariesIds = this.topicCommentaryRepository.GetCommentariesIdByTopicId(topicId);
+            var commentariesIds = await this.topicCommentaryRepository.GetCommentariesIdByTopicIdAsync(topicId);
 
             var commentaries = new List<CommentaryData>();
             foreach (var commentaryId in commentariesIds)
