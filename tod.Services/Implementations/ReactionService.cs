@@ -6,6 +6,8 @@ using Tod.Domain.Models.Enums;
 using Tod.Domain.Repositories.Abstractions;
 using Tod.Services.Abstractions;
 using Tod.Services.Exceptions;
+using Tod.Services.Requests;
+using Tod.Services.Responses;
 
 namespace Tod.Services.Implementations
 {
@@ -19,6 +21,7 @@ namespace Tod.Services.Implementations
         private readonly ICommentaryRepository commentaryRepository;
         private readonly IUserTopicRepository userTopicRepository;
         private readonly IUserCommentaryRepository userCommentaryRepository;
+        private readonly ITopicCommentaryRepository topicCommentaryRepository;
      
 		public ReactionService(IUserTopicReactionRepository userTopicReactionRepository,
             IReactionRepository reactionRepository,
@@ -27,7 +30,8 @@ namespace Tod.Services.Implementations
             ITopicRepository topicRepository,
             ICommentaryRepository commentaryRepository,
             IUserTopicRepository userTopicRepository,
-            IUserCommentaryRepository userCommentaryRepository)
+            IUserCommentaryRepository userCommentaryRepository,
+            ITopicCommentaryRepository topicCommentaryRepository)
 		{
             this.reactionRepository = reactionRepository;
             this.userTopicReactionRepository = userTopicReactionRepository;
@@ -37,6 +41,7 @@ namespace Tod.Services.Implementations
             this.commentaryRepository = commentaryRepository;
             this.userTopicRepository = userTopicRepository;
             this.userCommentaryRepository = userCommentaryRepository;
+            this.topicCommentaryRepository = topicCommentaryRepository;
 		}
 
         public async Task<List<Reaction>> GetByTopicIdAsync(int topicId)
@@ -184,6 +189,111 @@ namespace Tod.Services.Implementations
             await this.UpdateAuthorRating(commentaryId, authorId, (int)value * 2, ContentType.Commentary);
 
             return true;
+        }
+
+        public async Task<ContentReactionData> GetUserTopicReactionByTopicId(int userId, int topicId)
+        {
+            var user = await this.userService.GetByIdAsync(userId);
+
+            if (user == null)
+            {
+                throw new NotFoundException("User");
+            }
+
+            if (user.Status == ContentStatus.Banned)
+            {
+                throw new BannedContentException("user");
+            }
+
+            var topic = await this.topicRepository.GetAsync(topicId);
+
+            if (topic == null)
+            {
+                throw new NotFoundException("Topic");
+            }
+
+            if (topic.Status == ContentStatus.Banned)
+            {
+                throw new BannedContentException("topic");
+            }
+
+            var reactionId = await this.userTopicReactionRepository.GetByUserIdAndTopicId(userId, topicId);
+
+            if (reactionId == 0)
+            {
+                return new ContentReactionData
+                {
+                    Id = topicId,
+                    Reacted = false,
+                    ReactedPositive = false
+                };
+            }
+
+            var reaction = await this.reactionRepository.GetAsync(reactionId);
+
+            if (reaction == null)
+            {
+                throw new NotFoundException("Reaction");
+            }
+
+            return new ContentReactionData
+            {
+                Id = topicId,
+                Reacted = true,
+                ReactedPositive = reaction.ReactionValue == ReactionValue.Positive ? true : false
+            };
+        }
+
+        public async Task<List<ContentReactionData>> GetUserCommentariesReactions(int userId, int topicId)
+        {
+            var user = await this.userService.GetByIdAsync(userId);
+
+            if (user == null)
+            {
+                throw new NotFoundException("User");
+            }
+
+            if (user.Status == ContentStatus.Banned)
+            {
+                throw new BannedContentException("user");
+            }
+
+            var topic = await this.topicRepository.GetAsync(topicId);
+
+            if (topic == null)
+            {
+                throw new NotFoundException("Topic");
+            }
+
+            if (topic.Status == ContentStatus.Banned)
+            {
+                throw new BannedContentException("topic");
+            }
+
+            var commentariesIds = await this.topicCommentaryRepository.GetCommentariesIdByTopicIdAsync(topicId);
+
+            var contentReactionsData = new List<ContentReactionData>();
+            foreach (var commentaryId in commentariesIds)
+            {
+                var reactionId = await this.userCommentaryReactionRepository.GetByUserIdAndCommentaryId(userId, commentaryId);
+                if (reactionId == 0)
+                {
+                    continue;
+                }
+
+                var reaction = await this.reactionRepository.GetAsync(reactionId);
+
+                var contentReactionData = new ContentReactionData
+                {
+                    Id = commentaryId,
+                    Reacted = true,
+                    ReactedPositive = reaction.ReactionValue == ReactionValue.Positive ? true : false
+                };
+
+                contentReactionsData.Add(contentReactionData);
+            }
+
+            return contentReactionsData;
         }
 
         private async Task UpdateAuthorRating(int contentId, int authorId, int value, ContentType contentType)

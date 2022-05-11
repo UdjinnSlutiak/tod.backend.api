@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Tod.Domain.Models;
 using Tod.Domain.Repositories.Abstractions;
 using Tod.Domain.Repositories.Realisations.Sql;
@@ -17,9 +19,9 @@ namespace Tod.Domain.Repositories.Implementations.Sql
             this.context = context;
 		}
 
-        public List<int> GetCommentariesIdByTopicId(int topicId)
+        public async Task<List<int>> GetCommentariesIdByTopicIdAsync(int topicId)
         {
-            return context.Set<TopicCommentary>().Where(tc => tc.TopicId == topicId).Select(tc => tc.CommentaryId).ToList();
+            return await context.Set<TopicCommentary>().Where(tc => tc.TopicId == topicId).Select(tc => tc.CommentaryId).ToListAsync();
         }
     }
 }
