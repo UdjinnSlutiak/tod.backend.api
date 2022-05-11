@@ -27,7 +27,7 @@ namespace Tod.Services.Implementations
 
         public async Task<List<Tag>> GetByTopicIdAsync(int topicId)
         {
-            var tagIds = this.topicTagRepository.GetByTopicId(topicId);
+            var tagIds = await this.topicTagRepository.GetByTopicIdAsync(topicId);
 
             var tags = new List<Tag>();
             foreach (var tagId in tagIds)

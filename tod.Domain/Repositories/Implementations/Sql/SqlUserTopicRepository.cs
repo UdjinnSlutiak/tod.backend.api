@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Tod.Domain.Models;
@@ -19,7 +21,12 @@ namespace Tod.Domain.Repositories.Implementations.Sql
 
         public async Task<int> GetUserIdByTopicIdAsync(int topicId)
         {
-			return (await context.Set<UserTopic>().FirstOrDefaultAsync(ut => ut.TopicId == topicId)).UserId;
+			return (await this.context.Set<UserTopic>().FirstOrDefaultAsync(ut => ut.TopicId == topicId)).UserId;
+        }
+
+		public async Task<List<int>> GetTopicsIdByUserId(int userId)
+        {
+			return await this.context.Set<UserTopic>().Where(ut => ut.UserId == userId).Select(ut => ut.TopicId).ToListAsync();
         }
     }
 }

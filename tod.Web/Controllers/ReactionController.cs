@@ -11,7 +11,7 @@ namespace Tod.Web.Controllers
 {
 	[ApiController]
 	[Authorize]
-	[Route("api")]
+	[Route("api/reactions")]
 	public class ReactionController : ControllerBase
 	{
 		private readonly IReactionService reactionService;
@@ -21,7 +21,7 @@ namespace Tod.Web.Controllers
 			this.reactionService = reactionService;
 		}
 
-		[HttpPost("topics/{topicId}/reactions")]
+		[HttpPost("topics/{topicId}")]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -57,9 +57,13 @@ namespace Tod.Web.Controllers
             {
 				return BadRequest(ex.Message);
             }
+			catch (AlreadyReactedException ex)
+            {
+				return BadRequest(ex.Message);
+            }
 		}
 
-		[HttpPost("commentaries/{commentaryId}/reactions")]
+		[HttpPost("commentaries/{commentaryId}")]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -92,6 +96,10 @@ namespace Tod.Web.Controllers
 				return NotFound(ex.Message);
 			}
 			catch (ContentBelongsToYouException ex)
+			{
+				return BadRequest(ex.Message);
+			}
+			catch (AlreadyReactedException ex)
 			{
 				return BadRequest(ex.Message);
 			}
