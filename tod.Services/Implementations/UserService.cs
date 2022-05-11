@@ -20,6 +20,11 @@ namespace Tod.Services.Implementations
             return await this.userRepository.GetAsync(id);
         }
 
+        public async Task<User> GetByUsernameAsync(string username)
+        {
+            return await this.userRepository.GetUserByUsernameAsync(username);
+        }
+
         public async Task<User> UpdateAsync(User user)
         {
             return await this.userRepository.UpdateAsync(user);

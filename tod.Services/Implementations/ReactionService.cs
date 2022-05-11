@@ -116,7 +116,7 @@ namespace Tod.Services.Implementations
 
             if (reaction.ReactionValue == value)
             {
-                return false;
+                throw new AlreadyReactedException(ContentType.Topic, value);
             }
 
             reaction.ReactionValue = value;
@@ -176,7 +176,7 @@ namespace Tod.Services.Implementations
 
             if (reaction.ReactionValue == value)
             {
-                return false;
+                throw new AlreadyReactedException(ContentType.Commentary, value);
             }
 
             reaction.ReactionValue = value;

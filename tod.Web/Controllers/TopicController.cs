@@ -125,6 +125,30 @@ namespace Tod.Web.Controllers
 				return BadRequest(ex.Message);
             }
         }
+
+		[AllowAnonymous]
+		[HttpPost("search")]
+		[ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+		[ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+		public async Task<ActionResult<GetTopicsResponse>> SearchTopicsAsync(TopicSearchRequest request)
+        {
+			try
+            {
+				var response = await this.topicService.SearchTopicsAsync(request);
+
+				if (response == null)
+                {
+					return BadRequest();
+                }
+
+				return response;
+            }
+			catch (NotFoundException ex)
+			{
+				return NotFound(ex.Message);
+			}
+		}
 	}
 }
 

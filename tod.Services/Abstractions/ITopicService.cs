@@ -13,6 +13,7 @@ namespace Tod.Services.Abstractions
 		public Task<GetTopicsResponse> GetTopicsAsync(int skip, int offset);
 		public Task<CreateTopicResponse> CreateAsync(CreateTopicRequest request, int userId);
 		public Task<bool> AddToFavoritesAsync(int topicId, int userId);
+		public Task<GetTopicsResponse> SearchTopicsAsync(TopicSearchRequest request);
 	}
 }
 

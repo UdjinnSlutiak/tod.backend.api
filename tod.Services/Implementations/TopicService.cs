@@ -16,7 +16,7 @@ namespace Tod.Services.Implementations
 	public class TopicService : ITopicService
 	{
         private readonly ITopicRepository topicRepository;
-        private readonly IRepository<TopicTag> topicTagRepository;
+        private readonly ITopicTagRepository topicTagRepository;
         private readonly IUserTopicRepository userTopicRepository;
         private readonly IFavoriteRepository favoriteRepository;
         private readonly IUserService userService;
@@ -24,7 +24,7 @@ namespace Tod.Services.Implementations
         private readonly IReactionService reactionService;
 
         public TopicService(ITopicRepository topicRepository,
-            IRepository<TopicTag> topicTagRepository,
+            ITopicTagRepository topicTagRepository,
             IUserTopicRepository userTopicRepository,
             IFavoriteRepository favoriteRepository,
             IUserService userService,
@@ -88,7 +88,7 @@ namespace Tod.Services.Implementations
 
         public async Task<GetTopicsResponse> GetTopicsAsync(int skip, int offset)
         {
-            var topics = await this.topicRepository.GetTopicsRangeAsync(skip, offset);
+            var topics = await this.topicRepository.GetRangeAsync(skip, offset);
 
             if (topics == null)
             {
@@ -236,6 +236,211 @@ namespace Tod.Services.Implementations
             await this.UpdateAuthorRatingAsync(authorId, 1);
 
             return true;
+        }
+
+        public async Task<GetTopicsResponse> SearchTopicsAsync(TopicSearchRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.Author)
+                && string.IsNullOrWhiteSpace(request.Title)
+                && (request.Tags == null || request.Tags.Count == 0))
+            {
+                return null;
+            }
+
+            var topicsIds = (List<int>)null;
+
+            if (!string.IsNullOrWhiteSpace(request.Author))
+            {
+                topicsIds = new();
+                topicsIds.AddRange(await this.SearchTopicByAuthorAsync(request.Author));
+            }
+
+            if (!string.IsNullOrWhiteSpace(request.Title))
+            {
+                topicsIds = await this.SearchTopicByTitleAsync(request.Title, topicsIds);
+            }
+
+            if (request.Tags == null || request.Tags.Count != 0)
+            {
+                topicsIds = await this.SearchTopicByTagsAsync(request.Tags, topicsIds);
+            }
+
+            if (topicsIds == null || topicsIds.Count == 0)
+            {
+                throw new NotFoundException("Topic");
+            }
+
+            var topicsData = await this.GetTopicsDataByTopicsIds(topicsIds);
+
+            return new GetTopicsResponse
+            {
+                Topics = topicsData
+            };
+        }
+
+        private async Task<List<TopicData>> GetTopicsDataByTopicsIds(List<int> topicsIds)
+        {
+            var topicsData = new List<TopicData>();
+
+            foreach (var topicId in topicsIds)
+            {
+                var topic = await this.topicRepository.GetAsync(topicId);
+
+                if (topic == null || topic.Status == ContentStatus.Banned)
+                {
+                    continue;
+                }
+
+                var authorId = await this.userTopicRepository.GetUserIdByTopicIdAsync(topicId);
+
+                var author = await this.userService.GetByIdAsync(authorId);
+
+                if (author == null || author.Status == ContentStatus.Banned)
+                {
+                    continue;
+                }
+
+                var tags = (await this.tagService.GetByTopicIdAsync(topicId)).ToList();
+
+                var reactions = await this.reactionService.GetByTopicIdAsync(topicId);
+
+                var positive = reactions.Where(r => r.ReactionValue == ReactionValue.Positive).Count();
+                var negative = reactions.Count - positive;
+
+                topicsData.Add(new TopicData
+                {
+                    Id = topicId,
+                    Title = topic.Title,
+                    CreatedUtc = topic.CreatedUtc,
+                    Author = new UserDto(author),
+                    Tags = tags,
+                    Rating = positive - negative
+                });
+            }
+
+            return topicsData;
+        }
+
+        private async Task<List<int>> SearchTopicByAuthorAsync(string username)
+        {
+            var topicsByAuthor = await this.GetTopicsIdByAuthorAsync(username);
+
+            if (topicsByAuthor == null || topicsByAuthor.Count == 0)
+            {
+                throw new NotFoundException("Topic");
+            }
+
+            return topicsByAuthor;
+        }
+
+        private async Task<List<int>> SearchTopicByTitleAsync(string title, List<int> topicsIds)
+        {
+            var topicsByTitle = await this.GetTopicsIdByTitle(title);
+
+            if (topicsByTitle == null || topicsByTitle.Count == 0)
+            {
+                throw new NotFoundException("Topic");
+            }
+
+            if (topicsIds == null)
+            {
+                topicsIds = new();
+                topicsIds.AddRange(topicsByTitle);
+
+                return topicsIds;
+            }
+
+            var filtered = topicsIds.Intersect(topicsByTitle).ToList();
+
+            if (filtered.Count == 0)
+            {
+                throw new NotFoundException("Topic");
+            }
+
+            return filtered;
+        }
+
+        private async Task<List<int>> SearchTopicByTagsAsync(List<string> tags, List<int> topicsIds)
+        {
+            var topicsByTags = await this.GetTopicsIdByTags(tags);
+
+            if (topicsByTags == null || topicsByTags.Count == 0)
+            {
+                throw new NotFoundException("Topic");
+            }
+
+            if (topicsIds == null)
+            {
+                topicsIds = new();
+                topicsIds.AddRange(topicsByTags);
+
+                return topicsIds;
+            }
+
+            var filtered = topicsIds.Intersect(topicsByTags).ToList();
+
+            if (filtered.Count == 0)
+            {
+                throw new NotFoundException("Topic");
+            }
+
+            return filtered;
+        }
+
+        private async Task<List<int>> GetTopicsIdByAuthorAsync(string username)
+        {
+            var user = await this.userService.GetByUsernameAsync(username);
+
+            if (user == null)
+            {
+                throw new NotFoundException("User");
+            }
+
+            return await this.userTopicRepository.GetTopicsIdByUserId(user.Id);
+        }
+
+        private async Task<List<int>> GetTopicsIdByTitle(string title)
+        {
+            return (await this.topicRepository.GetWhereTitleContainsAsync(title)).Select(t => t.Id).ToList();
+        }
+
+        private async Task<List<int>> GetTopicsIdByTags(List<string> tagsTitles)
+        {
+            var topicsIds = (List<int>)null;
+
+            foreach (var tagTitle in tagsTitles)
+            {
+                var tag = await this.tagService.GetByTitleAsync(tagTitle);
+
+                if (tag == null)
+                    return null;
+
+                var topicsIdsByTag = await this.topicTagRepository.GetByTagIdAsync(tag.Id);
+
+                if (topicsIds == null)
+                {
+                    topicsIds = new();
+                    topicsIds.AddRange(topicsIdsByTag);
+
+                    if (topicsIds.Count == 0)
+                    {
+                        return null;
+                    }
+
+                    continue;
+                }
+
+                var filtered = topicsIdsByTag.Intersect(topicsIds).ToList();
+
+                if (filtered.Count == 0)
+                {
+                    return null;
+                }
+
+                topicsIds = filtered;
+            }
+
+            return topicsIds;
         }
 
         private async Task UpdateAuthorRatingAsync(int authorId, int value)
