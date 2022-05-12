@@ -78,19 +78,19 @@ namespace Tod.Services.Implementations
 
             if (topic == null)
             {
-                throw new NotFoundException("Topic");
+                throw new NotFoundException(ContentType.Topic);
             }
 
             if (topic.Status == ContentStatus.Banned)
             {
-                throw new BannedContentException("topic");
+                throw new BannedContentException(ContentType.Topic);
             }
 
             var user = await this.userService.GetByIdAsync(userId);
 
             if (user.Status == ContentStatus.Banned)
             {
-                throw new BannedContentException("author");
+                throw new BannedContentException(ContentType.User);
             }
 
             var authorId = await this.userTopicRepository.GetUserIdByTopicIdAsync(topicId);
@@ -137,19 +137,19 @@ namespace Tod.Services.Implementations
 
             if (commentary == null)
             {
-                throw new NotFoundException("Commentary");
+                throw new NotFoundException(ContentType.Commentary);
             }
 
             if (commentary.Status == ContentStatus.Banned)
             {
-                throw new BannedContentException("commentary");
+                throw new BannedContentException(ContentType.Commentary);
             }
 
             var user = await this.userService.GetByIdAsync(userId);
 
             if (user.Status == ContentStatus.Banned)
             {
-                throw new BannedContentException("author");
+                throw new BannedContentException(ContentType.User);
             }
 
             var authorId = await this.userCommentaryRepository.GetUserIdByCommentaryId(commentaryId);
@@ -197,24 +197,24 @@ namespace Tod.Services.Implementations
 
             if (user == null)
             {
-                throw new NotFoundException("User");
+                throw new NotFoundException(ContentType.User);
             }
 
             if (user.Status == ContentStatus.Banned)
             {
-                throw new BannedContentException("user");
+                throw new BannedContentException(ContentType.User);
             }
 
             var topic = await this.topicRepository.GetAsync(topicId);
 
             if (topic == null)
             {
-                throw new NotFoundException("Topic");
+                throw new NotFoundException(ContentType.Topic);
             }
 
             if (topic.Status == ContentStatus.Banned)
             {
-                throw new BannedContentException("topic");
+                throw new BannedContentException(ContentType.Topic);
             }
 
             var reactionId = await this.userTopicReactionRepository.GetByUserIdAndTopicId(userId, topicId);
@@ -233,7 +233,7 @@ namespace Tod.Services.Implementations
 
             if (reaction == null)
             {
-                throw new NotFoundException("Reaction");
+                throw new NotFoundException(ContentType.Reaction);
             }
 
             return new ContentReactionData
@@ -250,24 +250,24 @@ namespace Tod.Services.Implementations
 
             if (user == null)
             {
-                throw new NotFoundException("User");
+                throw new NotFoundException(ContentType.User);
             }
 
             if (user.Status == ContentStatus.Banned)
             {
-                throw new BannedContentException("user");
+                throw new BannedContentException(ContentType.User);
             }
 
             var topic = await this.topicRepository.GetAsync(topicId);
 
             if (topic == null)
             {
-                throw new NotFoundException("Topic");
+                throw new NotFoundException(ContentType.Topic);
             }
 
             if (topic.Status == ContentStatus.Banned)
             {
-                throw new BannedContentException("topic");
+                throw new BannedContentException(ContentType.Topic);
             }
 
             var commentariesIds = await this.topicCommentaryRepository.GetCommentariesIdByTopicIdAsync(topicId);

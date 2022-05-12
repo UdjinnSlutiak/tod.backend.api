@@ -81,24 +81,24 @@ namespace Tod.Services.Implementations
 
             if (user == null)
             {
-                throw new NotFoundException("User");
+                throw new NotFoundException(ContentType.User);
             }
 
             if (user.Status == ContentStatus.Banned)
             {
-                throw new BannedContentException("author");
+                throw new BannedContentException(ContentType.User);
             }
 
             var topic = await this.topicService.GetByIdAsync(topicId);
 
             if (topic == null)
             {
-                throw new NotFoundException("Topic");
+                throw new NotFoundException(ContentType.User);
             }
 
             if (topic.Status == ContentStatus.Banned)
             {
-                throw new BannedContentException("topic");
+                throw new BannedContentException(ContentType.User);
             }
 
             var commentary = new Commentary

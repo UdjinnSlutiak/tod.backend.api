@@ -51,12 +51,12 @@ namespace Tod.Services.Implementations
 
             if (topic == null)
             {
-                throw new NotFoundException("Topic");
+                throw new NotFoundException(ContentType.Topic);
             }
 
             if (topic.Status == ContentStatus.Banned)
             {
-                throw new BannedContentException("topic");
+                throw new BannedContentException(ContentType.Topic);
             }
 
             var authorId = await this.userTopicRepository.GetUserIdByTopicIdAsync(id);
@@ -65,7 +65,7 @@ namespace Tod.Services.Implementations
 
             if (user.Status == ContentStatus.Banned)
             {
-                throw new BannedContentException("author");
+                throw new BannedContentException(ContentType.User);
             }
 
             var tags = (await this.tagService.GetByTopicIdAsync(id)).ToList();
@@ -126,13 +126,32 @@ namespace Tod.Services.Implementations
             };
         }
 
+        public async Task<GetTopicsResponse> GetFavoritesAsync(int userId)
+        {
+            var user = await this.userService.GetByIdAsync(userId);
+
+            if (user == null)
+            {
+                throw new NotFoundException(ContentType.User);
+            }
+
+            var userFavoritesIds = await this.favoriteRepository.GetByUserId(userId);
+
+            var topicsData = await this.GetTopicsDataByTopicsIds(userFavoritesIds);
+
+            return new GetTopicsResponse
+            {
+                Topics = topicsData
+            };
+        }
+
         public async Task<CreateTopicResponse> CreateAsync(CreateTopicRequest request, int userId)
         {
             var user = await this.userService.GetByIdAsync(userId);
 
             if (user == null)
             {
-                throw new NotFoundException("User");
+                throw new NotFoundException(ContentType.User);
             }
 
             var topicSearchResult = await this.topicRepository.GetByTitleAsync(request.Title);
@@ -191,24 +210,24 @@ namespace Tod.Services.Implementations
 
             if (topic == null)
             {
-                throw new NotFoundException("Topic");
+                throw new NotFoundException(ContentType.Topic);
             }
 
             if (topic.Status == ContentStatus.Banned)
             {
-                throw new BannedContentException("topic");
+                throw new BannedContentException(ContentType.Topic);
             }
 
             var user = await this.userService.GetByIdAsync(userId);
 
             if (user == null)
             {
-                throw new NotFoundException("User");
+                throw new NotFoundException(ContentType.User);
             }
 
             if (user.Status == ContentStatus.Banned)
             {
-                throw new BannedContentException("user");
+                throw new BannedContentException(ContentType.User);
             }
 
             var authorId = await this.userTopicRepository.GetUserIdByTopicIdAsync(topicId);
@@ -267,7 +286,7 @@ namespace Tod.Services.Implementations
 
             if (topicsIds == null || topicsIds.Count == 0)
             {
-                throw new NotFoundException("Topic");
+                throw new NotFoundException(ContentType.Topic);
             }
 
             var topicsData = await this.GetTopicsDataByTopicsIds(topicsIds);
@@ -327,7 +346,7 @@ namespace Tod.Services.Implementations
 
             if (topicsByAuthor == null || topicsByAuthor.Count == 0)
             {
-                throw new NotFoundException("Topic");
+                throw new NotFoundException(ContentType.Topic);
             }
 
             return topicsByAuthor;
@@ -339,7 +358,7 @@ namespace Tod.Services.Implementations
 
             if (topicsByTitle == null || topicsByTitle.Count == 0)
             {
-                throw new NotFoundException("Topic");
+                throw new NotFoundException(ContentType.Topic);
             }
 
             if (topicsIds == null)
@@ -354,7 +373,7 @@ namespace Tod.Services.Implementations
 
             if (filtered.Count == 0)
             {
-                throw new NotFoundException("Topic");
+                throw new NotFoundException(ContentType.Topic);
             }
 
             return filtered;
@@ -366,7 +385,7 @@ namespace Tod.Services.Implementations
 
             if (topicsByTags == null || topicsByTags.Count == 0)
             {
-                throw new NotFoundException("Topic");
+                throw new NotFoundException(ContentType.Topic);
             }
 
             if (topicsIds == null)
@@ -381,7 +400,7 @@ namespace Tod.Services.Implementations
 
             if (filtered.Count == 0)
             {
-                throw new NotFoundException("Topic");
+                throw new NotFoundException(ContentType.Topic);
             }
 
             return filtered;
@@ -393,7 +412,7 @@ namespace Tod.Services.Implementations
 
             if (user == null)
             {
-                throw new NotFoundException("User");
+                throw new NotFoundException(ContentType.User);
             }
 
             return await this.userTopicRepository.GetTopicsIdByUserId(user.Id);

@@ -1,10 +1,12 @@
 ﻿using System;
+using Tod.Domain.Models.Enums;
+
 namespace Tod.Services.Exceptions
 {
 	public class BannedContentException : ServiceException
 	{
-		public BannedContentException(string contentType)
-			: base($"This {contentType} was banned.") { }
+		public BannedContentException(ContentType contentType)
+			: base($"This {contentType.ToString().ToLower()} was banned.") { }
 	}
 }
 

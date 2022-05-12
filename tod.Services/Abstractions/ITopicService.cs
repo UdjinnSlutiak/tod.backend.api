@@ -11,6 +11,7 @@ namespace Tod.Services.Abstractions
 		public Task<Topic> GetByIdAsync(int topicId);
 		public Task<TopicData> GetTopicDataByIdAsync(int id);
 		public Task<GetTopicsResponse> GetTopicsAsync(int skip, int offset);
+		public Task<GetTopicsResponse> GetFavoritesAsync(int userId);
 		public Task<CreateTopicResponse> CreateAsync(CreateTopicRequest request, int userId);
 		public Task<bool> AddToFavoritesAsync(int topicId, int userId);
 		public Task<GetTopicsResponse> SearchTopicsAsync(TopicSearchRequest request);
