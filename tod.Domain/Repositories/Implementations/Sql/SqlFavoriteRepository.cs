@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -21,6 +22,11 @@ namespace Tod.Domain.Repositories.Implementations.Sql
         public async Task<FavoriteTopic> GetByUserIdAndTopicId(int userId, int topicId)
         {
 			return await this.context.Set<FavoriteTopic>().FirstOrDefaultAsync(f => f.UserId == userId && f.TopicId == topicId);
+        }
+
+		public async Task<List<int>> GetByUserId(int userId)
+        {
+			return await this.context.Set<FavoriteTopic>().Where(f => f.UserId == userId).Select(f => f.TopicId).ToListAsync();
         }
     }
 }

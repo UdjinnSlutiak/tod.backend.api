@@ -40,7 +40,7 @@ namespace Tod.Services.Implementations
 
             if (user == null)
             {
-                throw new NotFoundException("User");
+                throw new NotFoundException(ContentType.User);
             }
 
             return new UserDto(user);
@@ -52,7 +52,7 @@ namespace Tod.Services.Implementations
 
             if (user == null)
             {
-                throw new NotFoundException("User");
+                throw new NotFoundException(ContentType.User);
             }
 
             return new UserDto(user);
@@ -64,7 +64,7 @@ namespace Tod.Services.Implementations
 
             if (user == null)
             {
-                throw new NotFoundException("User");
+                throw new NotFoundException(ContentType.User);
             }
 
             return new UserDto(user);
@@ -80,7 +80,7 @@ namespace Tod.Services.Implementations
 
                 if (user == null)
                 {
-                    throw new NotFoundException("User");
+                    throw new NotFoundException(ContentType.User);
                 }
             }
 

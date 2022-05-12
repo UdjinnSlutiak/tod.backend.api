@@ -56,6 +56,28 @@ namespace Tod.Web.Controllers
 			return response;
         }
 
+		[HttpGet("favorites")]
+		[ProducesResponseType(typeof(GetTopicsResponse), StatusCodes.Status200OK)]
+		[ProducesResponseType(typeof(string), StatusCodes.Status401Unauthorized)]
+		public async Task<ActionResult<GetTopicsResponse>> GetFavoritesAsync()
+		{
+			try
+            {
+				var userId = base.HttpContext.GetCurrentUserId();
+				var response = await this.topicService.GetFavoritesAsync(userId);
+
+				return response;
+            }
+			catch (NotFoundException ex)
+			{
+				return Unauthorized(ex.Message);
+			}
+			catch (InvalidTokenException ex)
+			{
+				return Unauthorized(ex.Message);
+			}
+		}
+
 		[HttpPost]
 		[ProducesResponseType(typeof(CreateTopicResponse), StatusCodes.Status201Created)]
 		[ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
