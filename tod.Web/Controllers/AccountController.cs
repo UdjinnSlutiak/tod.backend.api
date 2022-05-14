@@ -73,6 +73,28 @@ namespace Tod.Web.Controllers
             }
         }
 
+		[HttpPost("refresh-token")]
+		[ProducesResponseType(typeof(LoginResponse), StatusCodes.Status200OK)]
+		[ProducesResponseType(typeof(string), StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(typeof(string), StatusCodes.Status403Forbidden)]
+		public async Task<ActionResult<LoginResponse>> RefreshToken(RefreshTokenRequest request)
+        {
+			try
+            {
+				var response = await this.accountService.RefreshTokenAsync(request);
+
+				return response;
+            }
+			catch (InvalidTokenException ex)
+            {
+				return BadRequest(ex.Message);
+            }
+			catch (RedisException ex)
+            {
+				return Forbid(ex.Message);
+            }
+        }
+
 		[HttpGet("me")]
 		[ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
 		[ProducesResponseType(typeof(string), StatusCodes.Status401Unauthorized)]
