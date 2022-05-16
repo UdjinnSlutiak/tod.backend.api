@@ -28,7 +28,7 @@ namespace Tod.Web.Controllers
 		[HttpGet("{id}")]
 		[ProducesResponseType(typeof(TopicData), StatusCodes.Status200OK)]
 		[ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
-		public async Task<ActionResult<TopicData>> GetTopicAsync(int id)
+		public async Task<ActionResult<TopicData>> GetTopic(int id)
         {
 			try
             {
@@ -49,7 +49,7 @@ namespace Tod.Web.Controllers
 		[AllowAnonymous]
 		[HttpGet]
 		[ProducesResponseType(typeof(GetTopicsResponse), StatusCodes.Status200OK)]
-		public async Task<ActionResult<GetTopicsResponse>> GetTopicsAsync([FromQuery] int skip, int offset)
+		public async Task<ActionResult<GetTopicsResponse>> GetTopics([FromQuery] int skip, int offset)
         {
 			var response = await this.topicService.GetTopicsAsync(skip, offset);
 
@@ -59,7 +59,7 @@ namespace Tod.Web.Controllers
 		[HttpGet("favorites")]
 		[ProducesResponseType(typeof(GetTopicsResponse), StatusCodes.Status200OK)]
 		[ProducesResponseType(typeof(string), StatusCodes.Status401Unauthorized)]
-		public async Task<ActionResult<GetTopicsResponse>> GetFavoritesAsync()
+		public async Task<ActionResult<GetTopicsResponse>> GetFavorites()
 		{
 			try
             {
@@ -82,7 +82,7 @@ namespace Tod.Web.Controllers
 		[ProducesResponseType(typeof(CreateTopicResponse), StatusCodes.Status201Created)]
 		[ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(typeof(string), StatusCodes.Status401Unauthorized)]
-		public async Task<ActionResult<CreateTopicResponse>> CreateTopicAsync(CreateTopicRequest request)
+		public async Task<ActionResult<CreateTopicResponse>> CreateTopic(CreateTopicRequest request)
         {
 			try
             {
@@ -111,7 +111,7 @@ namespace Tod.Web.Controllers
 		[ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(typeof(string), StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
-		public async Task<ActionResult> AddToFavoritesAsync(int id)
+		public async Task<ActionResult> AddToFavorites(int id)
         {
 			try
             {
@@ -153,7 +153,7 @@ namespace Tod.Web.Controllers
 		[ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
 		[ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
-		public async Task<ActionResult<GetTopicsResponse>> SearchTopicsAsync(TopicSearchRequest request)
+		public async Task<ActionResult<GetTopicsResponse>> SearchTopics(TopicSearchRequest request)
         {
 			try
             {

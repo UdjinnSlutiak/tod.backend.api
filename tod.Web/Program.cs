@@ -76,6 +76,14 @@ services.AddStackExchangeRedisCache(options =>
     };
 });
 
+services.AddCors(c =>
+{
+    c.AddPolicy("AllowOrigin", options =>
+    {
+        options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+    });
+});
+
 services.AddControllers();
 
 services.AddTransient<IRepository<User>, SqlBaseRepository<User>>();
@@ -123,6 +131,11 @@ app.UseForwardedHeaders(new ForwardedHeadersOptions
 
 app.UseSwagger();
 app.UseSwaggerUI(options => options.SwaggerEndpoint("/swagger/v1/swagger.json", "tod Backend API"));
+
+app.UseCors(options =>
+{
+    options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+});
 
 app.UseHttpsRedirection();
 

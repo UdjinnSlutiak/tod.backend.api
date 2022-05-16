@@ -244,7 +244,7 @@ namespace Tod.Services.Implementations
             };
         }
 
-        public async Task<List<ContentReactionData>> GetUserCommentariesReactions(int userId, int topicId)
+        public async Task<ContentReactionsResponse> GetUserCommentariesReactions(int userId, int topicId)
         {
             var user = await this.userService.GetByIdAsync(userId);
 
@@ -293,7 +293,10 @@ namespace Tod.Services.Implementations
                 contentReactionsData.Add(contentReactionData);
             }
 
-            return contentReactionsData;
+            return new ContentReactionsResponse
+            {
+                Reactions = contentReactionsData
+            };
         }
 
         private async Task UpdateAuthorRating(int contentId, int authorId, int value, ContentType contentType)

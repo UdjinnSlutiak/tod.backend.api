@@ -15,7 +15,7 @@ namespace Tod.Services.Abstractions
 		public Task<bool> ReactOnTopicAsync(int topicId, int userId, ReactionValue value);
 		public Task<bool> ReactOnCommentaryAsync(int commentaryId, int userId, ReactionValue value);
 		public Task<ContentReactionData> GetUserTopicReactionByTopicId(int userId, int topicId);
-		public Task<List<ContentReactionData>> GetUserCommentariesReactions(int userId, int topicId);
+		public Task<ContentReactionsResponse> GetUserCommentariesReactions(int userId, int topicId);
 	}
 }
 
