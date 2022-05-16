@@ -26,7 +26,7 @@ namespace Tod.Web.Controllers
 		[AllowAnonymous]
 		[HttpGet]
 		[ProducesResponseType(typeof(GetCommentariesResponse), StatusCodes.Status200OK)]
-		public async Task<ActionResult<GetCommentariesResponse>> GetTopicCommentariesAsync([FromRoute] int topicId)
+		public async Task<ActionResult<GetCommentariesResponse>> GetTopicCommentaries([FromRoute] int topicId)
         {
 			var response = await this.commentaryService.GetCommentariesAsync(topicId);
 
@@ -37,7 +37,7 @@ namespace Tod.Web.Controllers
 		[ProducesResponseType(typeof(CommentaryData), StatusCodes.Status200OK)]
 		[ProducesResponseType(typeof(string), StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
-		public async Task<ActionResult<CommentaryData>> CreateCommentaryAsync([FromRoute] int topicId,
+		public async Task<ActionResult<CommentaryData>> CreateCommentary([FromRoute] int topicId,
 			[FromBody] CreateCommentaryRequest request)
         {
 			try

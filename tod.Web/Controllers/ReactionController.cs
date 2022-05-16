@@ -28,7 +28,7 @@ namespace Tod.Web.Controllers
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public async Task<ActionResult> ReactOnTopicAsync(int topicId, [FromBody] ReactionRequest request)
+		public async Task<ActionResult> ReactOnTopic(int topicId, [FromBody] ReactionRequest request)
         {
 			try
             {
@@ -36,7 +36,7 @@ namespace Tod.Web.Controllers
 
 				var reactedSuccessfully = await this.reactionService.ReactOnTopicAsync(topicId, userId, request.Value);
 
-				if (reactedSuccessfully)
+				if (!reactedSuccessfully)
                 {
 					return BadRequest();
                 }
@@ -70,7 +70,7 @@ namespace Tod.Web.Controllers
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public async Task<ActionResult> ReactOnCommentaryAsync(int commentaryId, [FromBody] ReactionRequest request)
+		public async Task<ActionResult> ReactOnCommentary(int commentaryId, [FromBody] ReactionRequest request)
         {
 			try
 			{
@@ -111,7 +111,7 @@ namespace Tod.Web.Controllers
 		[ProducesResponseType(typeof(ContentReactionData), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public async Task<ActionResult<ContentReactionData>> GetUserTopicReactionAsync(int id)
+		public async Task<ActionResult<ContentReactionData>> GetUserTopicReaction(int id)
         {
 			try
             {
@@ -138,7 +138,7 @@ namespace Tod.Web.Controllers
 		[ProducesResponseType(typeof(List<ContentReactionData>), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public async Task<ActionResult<List<ContentReactionData>>> GetUserCommentariesReactionAsync(int id)
+		public async Task<ActionResult<ContentReactionsResponse>> GetUserCommentariesReaction(int id)
 		{
 			try
 			{
