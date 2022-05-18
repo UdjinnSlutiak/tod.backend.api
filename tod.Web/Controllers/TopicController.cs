@@ -30,9 +30,19 @@ namespace Tod.Web.Controllers
 		[ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
 		public async Task<ActionResult<TopicData>> GetTopic(int id)
         {
+			var userId = 0;
 			try
             {
-				var response = await this.topicService.GetTopicDataByIdAsync(id);
+				userId = base.HttpContext.GetCurrentUserId();
+            }
+			catch (InvalidTokenException ex)
+            {
+
+            }
+
+			try
+            {
+				var response = await this.topicService.GetTopicDataByIdAsync(userId, id);
 
 				return response;
             }
@@ -51,7 +61,17 @@ namespace Tod.Web.Controllers
 		[ProducesResponseType(typeof(GetTopicsResponse), StatusCodes.Status200OK)]
 		public async Task<ActionResult<GetTopicsResponse>> GetTopics([FromQuery] int skip, int offset)
         {
-			var response = await this.topicService.GetTopicsAsync(skip, offset);
+			var userId = 0;
+			try
+            {
+				userId = base.HttpContext.GetCurrentUserId();
+			}
+			catch (InvalidTokenException ex)
+            {
+
+            }
+
+			var response = await this.topicService.GetTopicsAsync(userId, skip, offset);
 
 			return response;
         }
@@ -68,15 +88,42 @@ namespace Tod.Web.Controllers
 
 				return response;
             }
-			catch (NotFoundException ex)
-			{
-				return Unauthorized(ex.Message);
-			}
 			catch (InvalidTokenException ex)
 			{
 				return Unauthorized(ex.Message);
 			}
+			catch (NotFoundException ex)
+			{
+				return Unauthorized(ex.Message);
+			}
 		}
+
+		[HttpGet("my")]
+		[ProducesResponseType(typeof(GetTopicsResponse), StatusCodes.Status200OK)]
+		[ProducesResponseType(typeof(string), StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+		public async Task<ActionResult<GetTopicsResponse>> GetMyTopics()
+        {
+			try
+            {
+				var userId = base.HttpContext.GetCurrentUserId();
+				var response = await this.topicService.GetMyTopicsAsync(userId);
+
+				return response;
+            }
+			catch (InvalidTokenException ex)
+            {
+				return Unauthorized(ex.Message);
+            }
+			catch (NotFoundException ex)
+            {
+				return Unauthorized(ex.Message);
+            }
+			catch (BannedContentException ex)
+            {
+				return NotFound(ex.Message);
+            }
+        }
 
 		[HttpPost]
 		[ProducesResponseType(typeof(CreateTopicResponse), StatusCodes.Status201Created)]

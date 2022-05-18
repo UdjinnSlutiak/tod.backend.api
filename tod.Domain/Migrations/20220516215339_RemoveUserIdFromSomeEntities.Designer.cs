@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Tod.Domain;
 
@@ -11,9 +12,10 @@ using Tod.Domain;
 namespace Tod.Domain.Migrations
 {
     [DbContext(typeof(ProjectContext))]
-    partial class ProjectContextModelSnapshot : ModelSnapshot
+    [Migration("20220516215339_RemoveUserIdFromSomeEntities")]
+    partial class RemoveUserIdFromSomeEntities
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -53,9 +55,6 @@ namespace Tod.Domain.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("CommentaryId", "ReportId");
-
-                    b.HasIndex("ReportId")
-                        .IsUnique();
 
                     b.ToTable("CommentaryReports");
                 });
@@ -170,9 +169,6 @@ namespace Tod.Domain.Migrations
 
                     b.HasKey("TopicId", "CommentaryId");
 
-                    b.HasIndex("CommentaryId")
-                        .IsUnique();
-
                     b.ToTable("TopicCommentaries");
                 });
 
@@ -185,9 +181,6 @@ namespace Tod.Domain.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("TopicId", "ReportId");
-
-                    b.HasIndex("ReportId")
-                        .IsUnique();
 
                     b.ToTable("TopicReports");
                 });
@@ -251,9 +244,6 @@ namespace Tod.Domain.Migrations
 
                     b.HasKey("UserId", "CommentaryId");
 
-                    b.HasIndex("CommentaryId")
-                        .IsUnique();
-
                     b.ToTable("UserCommentaries");
                 });
 
@@ -272,9 +262,6 @@ namespace Tod.Domain.Migrations
 
                     b.HasIndex("CommentaryId");
 
-                    b.HasIndex("ReactionId")
-                        .IsUnique();
-
                     b.ToTable("UserCommentaryReactions");
                 });
 
@@ -287,9 +274,6 @@ namespace Tod.Domain.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("UserId", "ReportId");
-
-                    b.HasIndex("ReportId")
-                        .IsUnique();
 
                     b.ToTable("UserReports");
                 });
@@ -319,9 +303,6 @@ namespace Tod.Domain.Migrations
 
                     b.HasKey("UserId", "TopicId");
 
-                    b.HasIndex("TopicId")
-                        .IsUnique();
-
                     b.ToTable("UserTopics");
                 });
 
@@ -338,9 +319,6 @@ namespace Tod.Domain.Migrations
 
                     b.HasKey("UserId", "TopicId", "ReactionId");
 
-                    b.HasIndex("ReactionId")
-                        .IsUnique();
-
                     b.HasIndex("TopicId");
 
                     b.ToTable("UserTopicReactions");
@@ -351,12 +329,6 @@ namespace Tod.Domain.Migrations
                     b.HasOne("Tod.Domain.Models.Commentary", null)
                         .WithMany()
                         .HasForeignKey("CommentaryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Tod.Domain.Models.Report", null)
-                        .WithOne()
-                        .HasForeignKey("Tod.Domain.Models.CommentaryReport", "ReportId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -378,12 +350,6 @@ namespace Tod.Domain.Migrations
 
             modelBuilder.Entity("Tod.Domain.Models.TopicCommentary", b =>
                 {
-                    b.HasOne("Tod.Domain.Models.Commentary", null)
-                        .WithOne()
-                        .HasForeignKey("Tod.Domain.Models.TopicCommentary", "CommentaryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Tod.Domain.Models.Topic", null)
                         .WithMany()
                         .HasForeignKey("TopicId")
@@ -393,12 +359,6 @@ namespace Tod.Domain.Migrations
 
             modelBuilder.Entity("Tod.Domain.Models.TopicReport", b =>
                 {
-                    b.HasOne("Tod.Domain.Models.Report", null)
-                        .WithOne()
-                        .HasForeignKey("Tod.Domain.Models.TopicReport", "ReportId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Tod.Domain.Models.Topic", null)
                         .WithMany()
                         .HasForeignKey("TopicId")
@@ -423,12 +383,6 @@ namespace Tod.Domain.Migrations
 
             modelBuilder.Entity("Tod.Domain.Models.UserCommentary", b =>
                 {
-                    b.HasOne("Tod.Domain.Models.Commentary", null)
-                        .WithOne()
-                        .HasForeignKey("Tod.Domain.Models.UserCommentary", "CommentaryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Tod.Domain.Models.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
@@ -443,28 +397,10 @@ namespace Tod.Domain.Migrations
                         .HasForeignKey("CommentaryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("Tod.Domain.Models.Reaction", null)
-                        .WithOne()
-                        .HasForeignKey("Tod.Domain.Models.UserCommentaryReaction", "ReactionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Tod.Domain.Models.User", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("Tod.Domain.Models.UserReport", b =>
                 {
-                    b.HasOne("Tod.Domain.Models.Report", null)
-                        .WithOne()
-                        .HasForeignKey("Tod.Domain.Models.UserReport", "ReportId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Tod.Domain.Models.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
@@ -489,12 +425,6 @@ namespace Tod.Domain.Migrations
 
             modelBuilder.Entity("Tod.Domain.Models.UserTopic", b =>
                 {
-                    b.HasOne("Tod.Domain.Models.Topic", null)
-                        .WithOne()
-                        .HasForeignKey("Tod.Domain.Models.UserTopic", "TopicId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Tod.Domain.Models.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
@@ -504,21 +434,9 @@ namespace Tod.Domain.Migrations
 
             modelBuilder.Entity("Tod.Domain.Models.UserTopicReaction", b =>
                 {
-                    b.HasOne("Tod.Domain.Models.Reaction", null)
-                        .WithOne()
-                        .HasForeignKey("Tod.Domain.Models.UserTopicReaction", "ReactionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Tod.Domain.Models.Topic", null)
                         .WithMany()
                         .HasForeignKey("TopicId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Tod.Domain.Models.User", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

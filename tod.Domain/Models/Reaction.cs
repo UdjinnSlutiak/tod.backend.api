@@ -6,7 +6,6 @@ namespace Tod.Domain.Models
 	public class Reaction
 	{
         public int Id { get; set; }
-        public int UserId { get; set; }
         public ReactionValue ReactionValue { get; set; }
         public DateTime CreatedUtc { get; set; }
     }

@@ -54,7 +54,7 @@ namespace Tod.Services.Implementations
 
                 var user = await this.userService.GetByIdAsync(authorId);
 
-                var reactions = await this.reactionService.GetByCommentaryIdAsync(commentaryId);
+                var reactions = await this.reactionService.GetReactionsByCommentaryIdAsync(commentaryId);
 
                 var positive = reactions.Where(r => r.ReactionValue == ReactionValue.Positive).Count();
                 var negative = reactions.Count - positive;

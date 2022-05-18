@@ -45,7 +45,7 @@ namespace Tod.Services.Implementations
             return await this.topicRepository.GetAsync(topicId);
         }
 
-        public async Task<TopicData> GetTopicDataByIdAsync(int id)
+        public async Task<TopicData> GetTopicDataByIdAsync(int userId, int id)
         {
             var topic = await this.topicRepository.GetAsync(id);
 
@@ -75,6 +75,12 @@ namespace Tod.Services.Implementations
             var positive = reactions.Where(r => r.ReactionValue == ReactionValue.Positive).Count();
             var negative = reactions.Count - positive;
 
+            var fromFavorite = (FavoriteTopic)null;
+            if (userId != 0)
+            {
+                fromFavorite = await this.favoriteRepository.GetByUserIdAndTopicId(userId, topic.Id);
+            }
+
             return new TopicData
             {
                 Id = topic.Id,
@@ -82,11 +88,12 @@ namespace Tod.Services.Implementations
                 CreatedUtc = topic.CreatedUtc,
                 Author = new UserDto(user),
                 Tags = tags,
-                Rating = positive - negative
+                Rating = positive - negative,
+                IsInFavorite = fromFavorite != null
             };
         }
 
-        public async Task<GetTopicsResponse> GetTopicsAsync(int skip, int offset)
+        public async Task<GetTopicsResponse> GetTopicsAsync(int userId, int skip, int offset)
         {
             var topics = await this.topicRepository.GetRangeAsync(skip, offset);
 
@@ -109,6 +116,12 @@ namespace Tod.Services.Implementations
                 var positive = reactions.Where(r => r.ReactionValue == ReactionValue.Positive).Count();
                 var negative = reactions.Count - positive;
 
+                var fromFavorite = (FavoriteTopic)null;
+                if (userId != 0)
+                {
+                    fromFavorite = await this.favoriteRepository.GetByUserIdAndTopicId(userId, topic.Id);
+                }
+
                 topicsData.Add(new TopicData
                 {
                     Id = topic.Id,
@@ -116,7 +129,8 @@ namespace Tod.Services.Implementations
                     CreatedUtc = topic.CreatedUtc,
                     Author = new UserDto(author),
                     Tags = tags,
-                    Rating = positive - negative
+                    Rating = positive - negative,
+                    IsInFavorite = fromFavorite != null
                 });
             }
 
@@ -142,6 +156,30 @@ namespace Tod.Services.Implementations
             return new GetTopicsResponse
             {
                 Topics = topicsData
+            };
+        }
+
+        public async Task<GetTopicsResponse> GetMyTopicsAsync(int userId)
+        {
+            var user = await this.userService.GetByIdAsync(userId);
+
+            if (user == null)
+            {
+                throw new NotFoundException(ContentType.User);
+            }
+
+            if (user.Status == ContentStatus.Banned)
+            {
+                throw new BannedContentException(ContentType.User);
+            }
+
+            var userTopicsIds = await this.userTopicRepository.GetTopicsIdByUserId(userId);
+
+            var topics = await this.GetTopicsDataByTopicsIds(userTopicsIds);
+
+            return new GetTopicsResponse
+            {
+                Topics = topics
             };
         }
 

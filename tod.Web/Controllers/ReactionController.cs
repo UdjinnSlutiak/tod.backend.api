@@ -65,18 +65,18 @@ namespace Tod.Web.Controllers
             }
 		}
 
-		[HttpPost("commentaries/{commentaryId}")]
+		[HttpPost("commentaries/{id}")]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public async Task<ActionResult> ReactOnCommentary(int commentaryId, [FromBody] ReactionRequest request)
+		public async Task<ActionResult> ReactOnCommentary(int id, [FromBody] ReactionRequest request)
         {
 			try
 			{
 				var userId = base.HttpContext.GetCurrentUserId();
 
-				var reactedSuccessfully = await this.reactionService.ReactOnCommentaryAsync(commentaryId, userId, request.Value);
+				var reactedSuccessfully = await this.reactionService.ReactOnCommentaryAsync(id, userId, request.Value);
 
 				if (!reactedSuccessfully)
 				{
@@ -144,6 +144,33 @@ namespace Tod.Web.Controllers
 			{
 				var userId = base.HttpContext.GetCurrentUserId();
 				var response = await this.reactionService.GetUserCommentariesReactions(userId, id);
+
+				return response;
+			}
+			catch (InvalidTokenException ex)
+			{
+				return Unauthorized(ex.Message);
+			}
+			catch (NotFoundException ex)
+			{
+				return Unauthorized(ex.Message);
+			}
+			catch (BannedContentException ex)
+			{
+				return NotFound(ex.Message);
+			}
+		}
+
+		[HttpGet("commentaries/{id}")]
+		[ProducesResponseType(typeof(List<ContentReactionData>), StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+		public async Task<ActionResult<ContentReactionData>> GetUserCommentaryReaction(int id)
+        {
+			try
+            {
+				var userId = base.HttpContext.GetCurrentUserId();
+				var response = await this.reactionService.GetUserCommentaryReaction(userId, id);
 
 				return response;
 			}
