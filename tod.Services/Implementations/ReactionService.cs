@@ -58,7 +58,7 @@ namespace Tod.Services.Implementations
             return reactions;
         }
 
-        public async Task<List<Reaction>> GetByCommentaryIdAsync(int commentaryId)
+        public async Task<List<Reaction>> GetReactionsByCommentaryIdAsync(int commentaryId)
         {
             var reactionsIds = this.userCommentaryReactionRepository.GetByCommentaryId(commentaryId);
 
@@ -240,7 +240,7 @@ namespace Tod.Services.Implementations
             {
                 Id = topicId,
                 Reacted = true,
-                ReactedPositive = reaction.ReactionValue == ReactionValue.Positive ? true : false
+                ReactedPositive = reaction.ReactionValue == ReactionValue.Positive
             };
         }
 
@@ -287,7 +287,7 @@ namespace Tod.Services.Implementations
                 {
                     Id = commentaryId,
                     Reacted = true,
-                    ReactedPositive = reaction.ReactionValue == ReactionValue.Positive ? true : false
+                    ReactedPositive = reaction.ReactionValue == ReactionValue.Positive
                 };
 
                 contentReactionsData.Add(contentReactionData);
@@ -296,6 +296,59 @@ namespace Tod.Services.Implementations
             return new ContentReactionsResponse
             {
                 Reactions = contentReactionsData
+            };
+        }
+
+        public async Task<ContentReactionData> GetUserCommentaryReaction(int userId, int commentaryId)
+        {
+            var user = await this.userService.GetByIdAsync(userId);
+
+            if (user == null)
+            {
+                throw new NotFoundException(ContentType.User);
+            }
+
+            if (user.Status == ContentStatus.Banned)
+            {
+                throw new BannedContentException(ContentType.User);
+            }
+
+            var commentary = await this.commentaryRepository.GetAsync(commentaryId);
+
+            if (commentary == null)
+            {
+                throw new NotFoundException(ContentType.Commentary);
+            }
+
+            if (commentary.Status == ContentStatus.Banned)
+            {
+                throw new BannedContentException(ContentType.Commentary);
+            }
+
+            var reactionId = await this.userCommentaryReactionRepository.GetByUserIdAndCommentaryId(userId, commentaryId);
+
+            if (reactionId == 0)
+            {
+                return new ContentReactionData
+                {
+                    Id = commentaryId,
+                    Reacted = false,
+                    ReactedPositive = false
+                };
+            }
+
+            var reaction = await this.reactionRepository.GetAsync(reactionId);
+
+            if (reaction == null)
+            {
+                throw new NotFoundException(ContentType.Reaction);
+            }
+
+            return new ContentReactionData
+            {
+                Id = commentaryId,
+                Reacted = true,
+                ReactedPositive = reaction.ReactionValue == ReactionValue.Positive
             };
         }
 

@@ -7,6 +7,5 @@ namespace Tod.Domain.Models
         public int Id { get; set; }
         public ReportType Type { get; set; }
         public string Description { get; set; }
-        public int UserId { get; set; }
     }
 }

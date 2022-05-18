@@ -8,7 +8,7 @@ namespace Tod.Domain.Models.Dtos
         {
             this.Username = user.Username;
             this.Email = user.Email;
-            this.Role = user.Role;
+            this.Role = user.Role.ToString();
             this.Rating = user.Rating;
             this.PhotoUrl = user.PhotoUrl;
             this.Status = user.Status;
@@ -16,7 +16,7 @@ namespace Tod.Domain.Models.Dtos
 
         public string Username { get; set; }
         public string Email { get; set; }
-        public Role Role { get; set; }
+        public string Role { get; set; }
         public double Rating { get; set; }
         public string PhotoUrl { get; set; }
         public ContentStatus Status { get; set; }

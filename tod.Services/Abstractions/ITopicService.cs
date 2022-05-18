@@ -9,9 +9,10 @@ namespace Tod.Services.Abstractions
 	public interface ITopicService
 	{
 		public Task<Topic> GetByIdAsync(int topicId);
-		public Task<TopicData> GetTopicDataByIdAsync(int id);
-		public Task<GetTopicsResponse> GetTopicsAsync(int skip, int offset);
+		public Task<TopicData> GetTopicDataByIdAsync(int userId, int id);
+		public Task<GetTopicsResponse> GetTopicsAsync(int userId, int skip, int offset);
 		public Task<GetTopicsResponse> GetFavoritesAsync(int userId);
+		public Task<GetTopicsResponse> GetMyTopicsAsync(int userId);
 		public Task<CreateTopicResponse> CreateAsync(CreateTopicRequest request, int userId);
 		public Task<bool> AddToFavoritesAsync(int topicId, int userId);
 		public Task<GetTopicsResponse> SearchTopicsAsync(TopicSearchRequest request);

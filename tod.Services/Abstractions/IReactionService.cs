@@ -11,11 +11,12 @@ namespace Tod.Services.Abstractions
 	public interface IReactionService
 	{
 		public Task<List<Reaction>> GetByTopicIdAsync(int topicId);
-		public Task<List<Reaction>> GetByCommentaryIdAsync(int commentaryId);
+		public Task<List<Reaction>> GetReactionsByCommentaryIdAsync(int commentaryId);
 		public Task<bool> ReactOnTopicAsync(int topicId, int userId, ReactionValue value);
 		public Task<bool> ReactOnCommentaryAsync(int commentaryId, int userId, ReactionValue value);
 		public Task<ContentReactionData> GetUserTopicReactionByTopicId(int userId, int topicId);
 		public Task<ContentReactionsResponse> GetUserCommentariesReactions(int userId, int topicId);
+		public Task<ContentReactionData> GetUserCommentaryReaction(int userId, int commentaryId);
 	}
 }
 

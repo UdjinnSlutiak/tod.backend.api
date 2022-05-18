@@ -10,7 +10,12 @@ namespace Tod.Web.Extensions
 	{
 		public static int GetCurrentUserId(this HttpContext context)
         {
-			var userIdFromClaims = context.User?.Claims?.FirstOrDefault(c => c.Type == "UserId").Value;
+			if (context.User == null)
+            {
+				throw new InvalidTokenException();
+            }
+
+			var userIdFromClaims = context.User?.Claims?.FirstOrDefault(c => c.Type == "UserId")?.Value;
 
 			var parsedSuccessfully = int.TryParse(userIdFromClaims, out int userId);
 

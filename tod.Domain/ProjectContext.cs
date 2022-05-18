@@ -36,16 +36,28 @@ namespace Tod.Domain
                 .HasOne<User>()
                 .WithMany()
                 .HasForeignKey(t => t.UserId);
+            builder.Entity<UserTopic>()
+                .HasOne<Topic>()
+                .WithOne()
+                .HasForeignKey<UserTopic>(t => t.TopicId);
 
             builder.Entity<TopicCommentary>()
                 .HasOne<Topic>()
                 .WithMany()
                 .HasForeignKey(c => c.TopicId);
+            builder.Entity<TopicCommentary>()
+                .HasOne<Commentary>()
+                .WithOne()
+                .HasForeignKey<TopicCommentary>(c => c.CommentaryId);
 
             builder.Entity<UserCommentary>()
                 .HasOne<User>()
                 .WithMany()
                 .HasForeignKey(c => c.UserId);
+            builder.Entity<UserCommentary>()
+                .HasOne<Commentary>()
+                .WithOne()
+                .HasForeignKey<UserCommentary>(c => c.CommentaryId);
 
             builder.Entity<UserTag>()
                 .HasOne<User>()
@@ -78,26 +90,54 @@ namespace Tod.Domain
                 .HasOne<User>()
                 .WithMany()
                 .HasForeignKey(u => u.UserId);
+            builder.Entity<UserReport>()
+                .HasOne<Report>()
+                .WithOne()
+                .HasForeignKey<UserReport>(u => u.ReportId);
 
             builder.Entity<TopicReport>()
                 .HasOne<Topic>()
                 .WithMany()
                 .HasForeignKey(u => u.TopicId);
+            builder.Entity<TopicReport>()
+                .HasOne<Report>()
+                .WithOne()
+                .HasForeignKey<TopicReport>(_ => _.ReportId);
 
             builder.Entity<CommentaryReport>()
                 .HasOne<Commentary>()
                 .WithMany()
                 .HasForeignKey(u => u.CommentaryId);
+            builder.Entity<CommentaryReport>()
+                .HasOne<Report>()
+                .WithOne()
+                .HasForeignKey<CommentaryReport>(_ => _.ReportId);
 
             builder.Entity<UserTopicReaction>()
                 .HasOne<Topic>()
                 .WithMany()
                 .HasForeignKey(t => t.TopicId);
+            builder.Entity<UserTopicReaction>()
+                .HasOne<User>()
+                .WithMany()
+                .HasForeignKey(_ => _.UserId);
+            builder.Entity<UserTopicReaction>()
+                .HasOne<Reaction>()
+                .WithOne()
+                .HasForeignKey<UserTopicReaction>(_ => _.ReactionId);
 
             builder.Entity<UserCommentaryReaction>()
                 .HasOne<Commentary>()
                 .WithMany()
                 .HasForeignKey(c => c.CommentaryId);
+            builder.Entity<UserCommentaryReaction>()
+                .HasOne<User>()
+                .WithMany()
+                .HasForeignKey(_ => _.UserId);
+            builder.Entity<UserCommentaryReaction>()
+                .HasOne<Reaction>()
+                .WithOne()
+                .HasForeignKey<UserCommentaryReaction>(_ => _.ReactionId);
 
             builder.Entity<UserTopic>()
                 .HasKey(ut => new { ut.UserId, ut.TopicId });

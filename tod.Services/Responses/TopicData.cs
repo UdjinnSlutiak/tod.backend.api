@@ -13,6 +13,7 @@ namespace Tod.Services.Responses
         public UserDto Author { get; set; }
         public List<Tag> Tags { get; set; }
         public int Rating { get; set; }
+        public bool IsInFavorite { get; set; }
     }
 }
 
