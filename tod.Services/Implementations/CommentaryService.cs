@@ -15,24 +15,24 @@ namespace Tod.Services.Implementations
 	public class CommentaryService : ICommentaryService
 	{
         private readonly ICommentaryRepository commentaryRepository;
+        private readonly ITopicRepository topicRepository;
         private readonly ITopicCommentaryRepository topicCommentaryRepository;
         private readonly IUserCommentaryRepository userCommentaryRepository;
         private readonly IUserService userService;
-        private readonly ITopicService topicService;
         private readonly IReactionService reactionService;
 
 		public CommentaryService(ICommentaryRepository commentaryRepository,
+            ITopicRepository topicRepository,
             ITopicCommentaryRepository topicCommentaryRepository,
             IUserCommentaryRepository userCommentaryRepository,
             IUserService userService,
-            ITopicService topicService,
             IReactionService reactionService)
 		{
             this.commentaryRepository = commentaryRepository;
+            this.topicRepository = topicRepository;
             this.topicCommentaryRepository = topicCommentaryRepository;
             this.userCommentaryRepository = userCommentaryRepository;
             this.userService = userService;
-            this.topicService = topicService;
             this.reactionService = reactionService;
 		}
 
@@ -41,7 +41,7 @@ namespace Tod.Services.Implementations
             return await this.commentaryRepository.GetAsync(id);
         }
 
-        public async Task<GetCommentariesResponse> GetCommentariesAsync(int topicId)
+        public async Task<GetCommentariesResponse> GetTopicCommentariesAsync(int topicId)
         {
             var commentariesIds = await this.topicCommentaryRepository.GetCommentariesIdByTopicIdAsync(topicId);
 
@@ -75,31 +75,37 @@ namespace Tod.Services.Implementations
             };
         }
 
+        public async Task<List<int>> GetLatestDiscussedTopicsIds(int userId, int count = 20)
+        {
+            var userCommentariesIds = this.userCommentaryRepository.GetCommentariesIdsByUserId(userId);
+
+            var topicsIds = new List<int>();
+            while (topicsIds.Count != count)
+            {
+                var commentaryId = userCommentariesIds.FirstOrDefault();
+                if (commentaryId == 0)
+                {
+                    return topicsIds;
+                }
+
+                var topicId = await this.topicCommentaryRepository.GetTopicIdByCommentaryId(commentaryId);
+
+                if (topicsIds.Contains(topicId))
+                {
+                    userCommentariesIds.RemoveAt(0);
+                    continue;
+                }
+                topicsIds.Add(topicId);
+            }
+
+            return topicsIds;
+        }
+
         public async Task<CommentaryData> CreateCommentaryAsync(int topicId, int userId, string text)
         {
-            var user = await this.userService.GetByIdAsync(userId);
+            var user = await this.GetAndValidateUserAsync(userId);
 
-            if (user == null)
-            {
-                throw new NotFoundException(ContentType.User);
-            }
-
-            if (user.Status == ContentStatus.Banned)
-            {
-                throw new BannedContentException(ContentType.User);
-            }
-
-            var topic = await this.topicService.GetByIdAsync(topicId);
-
-            if (topic == null)
-            {
-                throw new NotFoundException(ContentType.User);
-            }
-
-            if (topic.Status == ContentStatus.Banned)
-            {
-                throw new BannedContentException(ContentType.User);
-            }
+            var topic = await this.GetAndValidateTopicAsync(topicId);
 
             var commentary = new Commentary
             {
@@ -120,6 +126,40 @@ namespace Tod.Services.Implementations
                 CreatedUtc = commentary.CreatedUtc,
                 Author = new UserDto(user)
             };
+        }
+
+        private async Task<User> GetAndValidateUserAsync(int userId)
+        {
+            var user = await this.userService.GetByIdAsync(userId);
+
+            if (user == null)
+            {
+                throw new NotFoundException(ContentType.User);
+            }
+
+            if (user.Status == ContentStatus.Banned)
+            {
+                throw new BannedContentException(ContentType.User);
+            }
+
+            return user;
+        }
+
+        private async Task<Topic> GetAndValidateTopicAsync(int topicId)
+        {
+            var topic = await this.topicRepository.GetAsync(topicId);
+
+            if (topic == null)
+            {
+                throw new NotFoundException(ContentType.Topic);
+            }
+
+            if (topic.Status == ContentStatus.Banned)
+            {
+                throw new BannedContentException(ContentType.Topic);
+            }
+
+            return topic;
         }
 
         private async Task CreateUserCommentaryAsync(int userId, int commentaryId)

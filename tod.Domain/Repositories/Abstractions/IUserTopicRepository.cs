@@ -8,7 +8,7 @@ namespace Tod.Domain.Repositories.Abstractions
 	public interface IUserTopicRepository : IRepository<UserTopic>
 	{
 		public Task<int> GetUserIdByTopicIdAsync(int topicId);
-		public Task<List<int>> GetTopicsIdByUserId(int userId);
+		public List<int> GetTopicsIdByUserId(int userId);
 	}
 }
 

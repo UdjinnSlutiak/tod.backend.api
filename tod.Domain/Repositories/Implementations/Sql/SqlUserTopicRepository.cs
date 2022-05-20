@@ -24,9 +24,9 @@ namespace Tod.Domain.Repositories.Implementations.Sql
 			return (await this.context.Set<UserTopic>().FirstOrDefaultAsync(ut => ut.TopicId == topicId)).UserId;
         }
 
-		public async Task<List<int>> GetTopicsIdByUserId(int userId)
+		public  List<int> GetTopicsIdByUserId(int userId)
         {
-			return await this.context.Set<UserTopic>().Where(ut => ut.UserId == userId).Select(ut => ut.TopicId).ToListAsync();
+			return this.context.Set<UserTopic>().OrderByDescending(ut => ut.TopicId).AsEnumerable().Where(ut => ut.UserId == userId).Select(ut => ut.TopicId).ToList();
         }
     }
 }

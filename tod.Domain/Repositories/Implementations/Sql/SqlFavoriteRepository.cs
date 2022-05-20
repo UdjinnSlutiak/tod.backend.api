@@ -24,9 +24,10 @@ namespace Tod.Domain.Repositories.Implementations.Sql
 			return await this.context.Set<FavoriteTopic>().FirstOrDefaultAsync(f => f.UserId == userId && f.TopicId == topicId);
         }
 
-		public async Task<List<int>> GetByUserId(int userId)
+		public List<int> GetByUserId(int userId)
         {
-			return await this.context.Set<FavoriteTopic>().Where(f => f.UserId == userId).Select(f => f.TopicId).ToListAsync();
+			return this.context.Set<FavoriteTopic>().OrderByDescending(ft => ft.TopicId).AsEnumerable()
+				.Where(f => f.UserId == userId).Select(f => f.TopicId).ToList();
         }
     }
 }

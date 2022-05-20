@@ -27,14 +27,13 @@ namespace Tod.Domain.Repositories.Realisations.Sql
 		public async Task<List<Topic>> GetRangeAsync(int skip, int offset)
         {
 			var clearTopics = await this.context.Set<Topic>().Where(t => t.Status == ContentStatus.Ok).ToListAsync();
-			return clearTopics.SkipLast(skip).TakeLast(offset).ToList();
+			return clearTopics.OrderByDescending(t => t.Id).AsEnumerable().Skip(skip).Take(offset).ToList();
 		}
 
 		public async Task<List<Topic>> GetWhereTitleContainsAsync(string titlePart)
         {
 			return await this.context.Set<Topic>().Where(t => t.Title.Contains(titlePart)).ToListAsync();
         }
-
 	}
 }
 

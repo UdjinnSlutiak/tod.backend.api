@@ -8,7 +8,7 @@ namespace Tod.Domain.Repositories.Abstractions
 	public interface IFavoriteRepository : IRepository<FavoriteTopic>
 	{
 		public Task<FavoriteTopic> GetByUserIdAndTopicId(int userId, int topicId);
-		public Task<List<int>> GetByUserId(int userId);
+		public List<int> GetByUserId(int userId);
 	}
 }
 

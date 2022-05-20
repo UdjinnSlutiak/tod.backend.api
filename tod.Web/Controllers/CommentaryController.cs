@@ -28,7 +28,7 @@ namespace Tod.Web.Controllers
 		[ProducesResponseType(typeof(GetCommentariesResponse), StatusCodes.Status200OK)]
 		public async Task<ActionResult<GetCommentariesResponse>> GetTopicCommentaries([FromRoute] int topicId)
         {
-			var response = await this.commentaryService.GetCommentariesAsync(topicId);
+			var response = await this.commentaryService.GetTopicCommentariesAsync(topicId);
 
 			return response;
         }

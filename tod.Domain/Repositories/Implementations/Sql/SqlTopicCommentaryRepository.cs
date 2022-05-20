@@ -23,6 +23,11 @@ namespace Tod.Domain.Repositories.Implementations.Sql
         {
             return await context.Set<TopicCommentary>().Where(tc => tc.TopicId == topicId).Select(tc => tc.CommentaryId).ToListAsync();
         }
+
+        public async Task<int> GetTopicIdByCommentaryId(int commentaryId)
+        {
+            return (await this.context.Set<TopicCommentary>().FirstOrDefaultAsync(tc => tc.CommentaryId == commentaryId)).TopicId;
+        }
     }
 }
 
