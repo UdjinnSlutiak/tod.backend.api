@@ -9,7 +9,8 @@ namespace Tod.Services.Abstractions
 	public interface ICommentaryService
 	{
 		public Task<Commentary> GetByIdAsync(int id);
-		public Task<GetCommentariesResponse> GetCommentariesAsync(int topicId);
+		public Task<GetCommentariesResponse> GetTopicCommentariesAsync(int topicId);
+		public Task<List<int>> GetLatestDiscussedTopicsIds(int userId, int count = 20);
 		public Task<CommentaryData> CreateCommentaryAsync(int topicId, int userId, string text);
 	}
 }

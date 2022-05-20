@@ -20,6 +20,7 @@ namespace Tod.Services.Implementations
         private readonly IUserTopicRepository userTopicRepository;
         private readonly IFavoriteRepository favoriteRepository;
         private readonly IUserService userService;
+        private readonly ICommentaryService commentaryService;
         private readonly ITagService tagService;
         private readonly IReactionService reactionService;
 
@@ -28,6 +29,7 @@ namespace Tod.Services.Implementations
             IUserTopicRepository userTopicRepository,
             IFavoriteRepository favoriteRepository,
             IUserService userService,
+            ICommentaryService commentaryService,
             ITagService tagService,
             IReactionService reactionService)
 		{
@@ -36,6 +38,7 @@ namespace Tod.Services.Implementations
             this.userTopicRepository = userTopicRepository;
             this.favoriteRepository = favoriteRepository;
             this.userService = userService;
+            this.commentaryService = commentaryService;
             this.tagService = tagService;
             this.reactionService = reactionService;
 		}
@@ -47,26 +50,11 @@ namespace Tod.Services.Implementations
 
         public async Task<TopicData> GetTopicDataByIdAsync(int userId, int id)
         {
-            var topic = await this.topicRepository.GetAsync(id);
-
-            if (topic == null)
-            {
-                throw new NotFoundException(ContentType.Topic);
-            }
-
-            if (topic.Status == ContentStatus.Banned)
-            {
-                throw new BannedContentException(ContentType.Topic);
-            }
+            var topic = await this.GetAndValidateTopicAsync(id);
 
             var authorId = await this.userTopicRepository.GetUserIdByTopicIdAsync(id);
 
-            var user = await this.userService.GetByIdAsync(authorId);
-
-            if (user.Status == ContentStatus.Banned)
-            {
-                throw new BannedContentException(ContentType.User);
-            }
+            var user = await this.GetAndValidateUserAsync(authorId);
 
             var tags = (await this.tagService.GetByTopicIdAsync(id)).ToList();
 
@@ -99,7 +87,10 @@ namespace Tod.Services.Implementations
 
             if (topics == null)
             {
-                return new GetTopicsResponse();
+                return new GetTopicsResponse
+                {
+                    Topics = new()
+                };
             }
 
             var topicsData = new List<TopicData>();
@@ -142,14 +133,17 @@ namespace Tod.Services.Implementations
 
         public async Task<GetTopicsResponse> GetFavoritesAsync(int userId)
         {
-            var user = await this.userService.GetByIdAsync(userId);
+            var user = await this.GetAndValidateUserAsync(userId);
 
-            if (user == null)
+            var userFavoritesIds = this.favoriteRepository.GetByUserId(userId);
+
+            if (userFavoritesIds.Count == 0)
             {
-                throw new NotFoundException(ContentType.User);
+                return new GetTopicsResponse
+                {
+                    Topics = new()
+                };
             }
-
-            var userFavoritesIds = await this.favoriteRepository.GetByUserId(userId);
 
             var topicsData = await this.GetTopicsDataByTopicsIds(userFavoritesIds);
 
@@ -161,19 +155,17 @@ namespace Tod.Services.Implementations
 
         public async Task<GetTopicsResponse> GetMyTopicsAsync(int userId)
         {
-            var user = await this.userService.GetByIdAsync(userId);
+            var user = await this.GetAndValidateUserAsync(userId);
 
-            if (user == null)
+            var userTopicsIds = this.userTopicRepository.GetTopicsIdByUserId(userId);
+
+            if (userTopicsIds.Count == 0)
             {
-                throw new NotFoundException(ContentType.User);
+                return new GetTopicsResponse
+                {
+                    Topics = new()
+                };
             }
-
-            if (user.Status == ContentStatus.Banned)
-            {
-                throw new BannedContentException(ContentType.User);
-            }
-
-            var userTopicsIds = await this.userTopicRepository.GetTopicsIdByUserId(userId);
 
             var topics = await this.GetTopicsDataByTopicsIds(userTopicsIds);
 
@@ -183,14 +175,31 @@ namespace Tod.Services.Implementations
             };
         }
 
+        public async Task<GetTopicsResponse> GetDiscussedTopicsAsync(int userId)
+        {
+            var user = await this.GetAndValidateUserAsync(userId);
+
+            var discussedTopicsIds = await this.commentaryService.GetLatestDiscussedTopicsIds(userId);
+            var discussedTopics = new List<TopicData>();
+            foreach (var topicId in discussedTopicsIds)
+            {
+                var topicData = await this.GetTopicDataByIdAsync(userId, topicId);
+                if (topicData == null)
+                {
+                    continue;
+                }
+                discussedTopics.Add(topicData);
+            }
+
+            return new GetTopicsResponse
+            {
+                Topics = discussedTopics
+            };
+        }
+
         public async Task<CreateTopicResponse> CreateAsync(CreateTopicRequest request, int userId)
         {
-            var user = await this.userService.GetByIdAsync(userId);
-
-            if (user == null)
-            {
-                throw new NotFoundException(ContentType.User);
-            }
+            var user = await this.GetAndValidateUserAsync(userId);
 
             var topicSearchResult = await this.topicRepository.GetByTitleAsync(request.Title);
 
@@ -244,29 +253,9 @@ namespace Tod.Services.Implementations
 
         public async Task<bool> AddToFavoritesAsync(int topicId, int userId)
         {
-            var topic = await this.topicRepository.GetAsync(topicId);
+            var topic = await this.GetAndValidateTopicAsync(topicId);
 
-            if (topic == null)
-            {
-                throw new NotFoundException(ContentType.Topic);
-            }
-
-            if (topic.Status == ContentStatus.Banned)
-            {
-                throw new BannedContentException(ContentType.Topic);
-            }
-
-            var user = await this.userService.GetByIdAsync(userId);
-
-            if (user == null)
-            {
-                throw new NotFoundException(ContentType.User);
-            }
-
-            if (user.Status == ContentStatus.Banned)
-            {
-                throw new BannedContentException(ContentType.User);
-            }
+            var user = await this.GetAndValidateUserAsync(userId);
 
             var authorId = await this.userTopicRepository.GetUserIdByTopicIdAsync(topicId);
 
@@ -453,7 +442,7 @@ namespace Tod.Services.Implementations
                 throw new NotFoundException(ContentType.User);
             }
 
-            return await this.userTopicRepository.GetTopicsIdByUserId(user.Id);
+            return this.userTopicRepository.GetTopicsIdByUserId(user.Id);
         }
 
         private async Task<List<int>> GetTopicsIdByTitle(string title)
@@ -498,6 +487,40 @@ namespace Tod.Services.Implementations
             }
 
             return topicsIds;
+        }
+
+        private async Task<User> GetAndValidateUserAsync(int userId)
+        {
+            var user = await this.userService.GetByIdAsync(userId);
+
+            if (user == null)
+            {
+                throw new NotFoundException(ContentType.User);
+            }
+
+            if (user.Status == ContentStatus.Banned)
+            {
+                throw new BannedContentException(ContentType.User);
+            }
+
+            return user;
+        }
+
+        private async Task<Topic> GetAndValidateTopicAsync(int topicId)
+        {
+            var topic = await this.topicRepository.GetAsync(topicId);
+
+            if (topic == null)
+            {
+                throw new NotFoundException(ContentType.Topic);
+            }
+
+            if (topic.Status == ContentStatus.Banned)
+            {
+                throw new BannedContentException(ContentType.Topic);
+            }
+
+            return topic;
         }
 
         private async Task UpdateAuthorRatingAsync(int authorId, int value)

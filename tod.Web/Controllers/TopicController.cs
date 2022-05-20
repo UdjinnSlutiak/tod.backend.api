@@ -28,6 +28,7 @@ namespace Tod.Web.Controllers
 		[HttpGet("{id}")]
 		[ProducesResponseType(typeof(TopicData), StatusCodes.Status200OK)]
 		[ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
 		public async Task<ActionResult<TopicData>> GetTopic(int id)
         {
 			var userId = 0;
@@ -79,6 +80,7 @@ namespace Tod.Web.Controllers
 		[HttpGet("favorites")]
 		[ProducesResponseType(typeof(GetTopicsResponse), StatusCodes.Status200OK)]
 		[ProducesResponseType(typeof(string), StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
 		public async Task<ActionResult<GetTopicsResponse>> GetFavorites()
 		{
 			try
@@ -96,7 +98,38 @@ namespace Tod.Web.Controllers
 			{
 				return Unauthorized(ex.Message);
 			}
+			catch (BannedContentException ex)
+			{
+				return NotFound(ex.Message);
+			}
 		}
+
+		[HttpGet("discussed")]
+		[ProducesResponseType(typeof(GetTopicsResponse), StatusCodes.Status200OK)]
+		[ProducesResponseType(typeof(string), StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+		public async Task<ActionResult<GetTopicsResponse>> GetDiscussedTopics()
+        {
+			try
+            {
+				var userId = base.HttpContext.GetCurrentUserId();
+				var response = await this.topicService.GetDiscussedTopicsAsync(userId);
+
+				return response;
+            }
+			catch (InvalidTokenException ex)
+            {
+				return Unauthorized(ex.Message);
+            }
+			catch (NotFoundException ex)
+            {
+				return Unauthorized(ex.Message);
+            }
+			catch (BannedContentException ex)
+            {
+				return NotFound(ex.Message);
+            }
+        }
 
 		[HttpGet("my")]
 		[ProducesResponseType(typeof(GetTopicsResponse), StatusCodes.Status200OK)]
@@ -129,6 +162,7 @@ namespace Tod.Web.Controllers
 		[ProducesResponseType(typeof(CreateTopicResponse), StatusCodes.Status201Created)]
 		[ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(typeof(string), StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
 		public async Task<ActionResult<CreateTopicResponse>> CreateTopic(CreateTopicRequest request)
         {
 			try
@@ -151,7 +185,11 @@ namespace Tod.Web.Controllers
             {
 				return BadRequest(ex.Message);
             }
-        }
+			catch (BannedContentException ex)
+			{
+				return NotFound(ex.Message);
+			}
+		}
 
 		[HttpPost("{id}/favorites")]
 		[ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
@@ -181,10 +219,6 @@ namespace Tod.Web.Controllers
             {
 				return Unauthorized(ex.Message);
             }
-			catch (BannedContentException ex)
-            {
-				return NotFound(ex.Message);
-            }
 			catch (TopicAlreadyInFavoritesException ex)
             {
 				return BadRequest(ex.Message);
@@ -192,6 +226,10 @@ namespace Tod.Web.Controllers
 			catch (ContentBelongsToYouException ex)
             {
 				return BadRequest(ex.Message);
+            }
+			catch (BannedContentException ex)
+            {
+				return NotFound(ex.Message);
             }
         }
 

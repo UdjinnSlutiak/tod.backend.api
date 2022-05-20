@@ -8,6 +8,7 @@ namespace Tod.Domain.Repositories.Abstractions
 	public interface ITopicCommentaryRepository : IRepository<TopicCommentary>
 	{
 		public Task<List<int>> GetCommentariesIdByTopicIdAsync(int topicId);
+		public Task<int> GetTopicIdByCommentaryId(int commentaryId);
 	}
 }
 
