@@ -15,6 +15,7 @@ namespace Tod.Services.Implementations
 	public class CommentaryService : ICommentaryService
 	{
         private readonly ICommentaryRepository commentaryRepository;
+        private readonly ITopicRepository topicRepository;
         private readonly ITopicCommentaryRepository topicCommentaryRepository;
         private readonly IUserCommentaryRepository userCommentaryRepository;
         private readonly IUserService userService;
@@ -22,6 +23,7 @@ namespace Tod.Services.Implementations
         private readonly IContentValidator contentValidator;
 
 		public CommentaryService(ICommentaryRepository commentaryRepository,
+            ITopicRepository topicRepository,
             ITopicCommentaryRepository topicCommentaryRepository,
             IUserCommentaryRepository userCommentaryRepository,
             IUserService userService,
@@ -29,6 +31,7 @@ namespace Tod.Services.Implementations
             IContentValidator contentValidator)
 		{
             this.commentaryRepository = commentaryRepository;
+            this.topicRepository = topicRepository;
             this.topicCommentaryRepository = topicCommentaryRepository;
             this.userCommentaryRepository = userCommentaryRepository;
             this.userService = userService;
@@ -50,7 +53,15 @@ namespace Tod.Services.Implementations
             var commentaries = new List<CommentaryData>();
             foreach (var commentaryId in commentariesIds)
             {
-                var commentary = await this.commentaryRepository.GetAsync(commentaryId);
+                var commentary = new Commentary();
+                try
+                {
+                    commentary = await this.contentValidator.GetAndValidateCommentaryAsync(commentaryId);
+                }
+                catch (ServiceException ex)
+                {
+                    continue;
+                }
 
                 var authorId = await this.userCommentaryRepository.GetUserIdByCommentaryId(commentaryId);
 
@@ -91,6 +102,12 @@ namespace Tod.Services.Implementations
                 }
 
                 var topicId = await this.topicCommentaryRepository.GetTopicIdByCommentaryId(commentaryId);
+                var topic = await this.topicRepository.GetAsync(topicId);
+                if (topic.Status != ContentStatus.Ok)
+                {
+                    userCommentariesIds.RemoveAt(0);
+                    continue;
+                }
 
                 if (topicsIds.Contains(topicId))
                 {
