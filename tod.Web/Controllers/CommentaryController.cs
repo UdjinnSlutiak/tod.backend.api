@@ -13,7 +13,7 @@ namespace Tod.Web.Controllers
 {
 	[Authorize]
 	[ApiController]
-	[Route("api/topics/{topicId}/commentaries")]
+	[Route("api")]
 	public class CommentaryController : ControllerBase
 	{
 		private readonly ICommentaryService commentaryService;
@@ -24,7 +24,7 @@ namespace Tod.Web.Controllers
 		}
 
 		[AllowAnonymous]
-		[HttpGet]
+		[HttpGet("topics/{topicId}/commentaries")]
 		[ProducesResponseType(typeof(GetCommentariesResponse), StatusCodes.Status200OK)]
 		public async Task<ActionResult<GetCommentariesResponse>> GetTopicCommentaries([FromRoute] int topicId)
         {
@@ -44,7 +44,7 @@ namespace Tod.Web.Controllers
 			}
 		}
 
-		[HttpPost]
+		[HttpPost("topics/{topicId}/commentaries")]
 		[ProducesResponseType(typeof(CommentaryData), StatusCodes.Status200OK)]
 		[ProducesResponseType(typeof(string), StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
@@ -73,7 +73,7 @@ namespace Tod.Web.Controllers
             }
         }
 
-		[HttpDelete("{id}")]
+		[HttpDelete("commentaries/{id}")]
 		[ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
 		[ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(typeof(string), StatusCodes.Status401Unauthorized)]
