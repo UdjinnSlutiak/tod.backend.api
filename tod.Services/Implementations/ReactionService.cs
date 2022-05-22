@@ -16,33 +16,36 @@ namespace Tod.Services.Implementations
         private readonly IReactionRepository reactionRepository;
         private readonly IUserTopicReactionRepository userTopicReactionRepository;
         private readonly IUserCommentaryReactionRepository userCommentaryReactionRepository;
-        private readonly IUserService userService;
         private readonly ITopicRepository topicRepository;
         private readonly ICommentaryRepository commentaryRepository;
         private readonly IUserTopicRepository userTopicRepository;
         private readonly IUserCommentaryRepository userCommentaryRepository;
         private readonly ITopicCommentaryRepository topicCommentaryRepository;
-     
-		public ReactionService(IUserTopicReactionRepository userTopicReactionRepository,
+        private readonly IUserService userService;
+        private readonly IContentValidator contentValidator;
+
+        public ReactionService(IUserTopicReactionRepository userTopicReactionRepository,
             IReactionRepository reactionRepository,
             IUserCommentaryReactionRepository userCommentaryReactionRepository,
-            IUserService userService,
             ITopicRepository topicRepository,
             ICommentaryRepository commentaryRepository,
             IUserTopicRepository userTopicRepository,
             IUserCommentaryRepository userCommentaryRepository,
-            ITopicCommentaryRepository topicCommentaryRepository)
+            ITopicCommentaryRepository topicCommentaryRepository,
+            IUserService userService,
+            IContentValidator contentValidator)
 		{
             this.reactionRepository = reactionRepository;
             this.userTopicReactionRepository = userTopicReactionRepository;
             this.userCommentaryReactionRepository = userCommentaryReactionRepository;
-            this.userService = userService;
             this.topicRepository = topicRepository;
             this.commentaryRepository = commentaryRepository;
             this.userTopicRepository = userTopicRepository;
             this.userCommentaryRepository = userCommentaryRepository;
             this.topicCommentaryRepository = topicCommentaryRepository;
-		}
+            this.userService = userService;
+            this.contentValidator = contentValidator;
+        }
 
         public async Task<List<Reaction>> GetByTopicIdAsync(int topicId)
         {
@@ -74,24 +77,9 @@ namespace Tod.Services.Implementations
 
         public async Task<bool> ReactOnTopicAsync(int topicId, int userId, ReactionValue value)
         {
-            var topic = await this.topicRepository.GetAsync(topicId);
+            var topic = await this.contentValidator.GetAndValidateTopicAsync(topicId);
 
-            if (topic == null)
-            {
-                throw new NotFoundException(ContentType.Topic);
-            }
-
-            if (topic.Status == ContentStatus.Banned)
-            {
-                throw new BannedContentException(ContentType.Topic);
-            }
-
-            var user = await this.userService.GetByIdAsync(userId);
-
-            if (user.Status == ContentStatus.Banned)
-            {
-                throw new BannedContentException(ContentType.User);
-            }
+            var user = await this.contentValidator.GetAndValidateUserAsync(userId);
 
             var authorId = await this.userTopicRepository.GetUserIdByTopicIdAsync(topicId);
 
@@ -133,24 +121,9 @@ namespace Tod.Services.Implementations
 
         public async Task<bool> ReactOnCommentaryAsync(int commentaryId, int userId, ReactionValue value)
         {
-            var commentary = await this.commentaryRepository.GetAsync(commentaryId);
+            var commentary = await this.contentValidator.GetAndValidateCommentaryAsync(commentaryId);
 
-            if (commentary == null)
-            {
-                throw new NotFoundException(ContentType.Commentary);
-            }
-
-            if (commentary.Status == ContentStatus.Banned)
-            {
-                throw new BannedContentException(ContentType.Commentary);
-            }
-
-            var user = await this.userService.GetByIdAsync(userId);
-
-            if (user.Status == ContentStatus.Banned)
-            {
-                throw new BannedContentException(ContentType.User);
-            }
+            var user = await this.contentValidator.GetAndValidateUserAsync(userId);
 
             var authorId = await this.userCommentaryRepository.GetUserIdByCommentaryId(commentaryId);
 
@@ -193,29 +166,9 @@ namespace Tod.Services.Implementations
 
         public async Task<ContentReactionData> GetUserTopicReactionByTopicId(int userId, int topicId)
         {
-            var user = await this.userService.GetByIdAsync(userId);
+            var user = await this.contentValidator.GetAndValidateUserAsync(userId);
 
-            if (user == null)
-            {
-                throw new NotFoundException(ContentType.User);
-            }
-
-            if (user.Status == ContentStatus.Banned)
-            {
-                throw new BannedContentException(ContentType.User);
-            }
-
-            var topic = await this.topicRepository.GetAsync(topicId);
-
-            if (topic == null)
-            {
-                throw new NotFoundException(ContentType.Topic);
-            }
-
-            if (topic.Status == ContentStatus.Banned)
-            {
-                throw new BannedContentException(ContentType.Topic);
-            }
+            var topic = await this.contentValidator.GetAndValidateTopicAsync(topicId);
 
             var reactionId = await this.userTopicReactionRepository.GetByUserIdAndTopicId(userId, topicId);
 
@@ -246,29 +199,9 @@ namespace Tod.Services.Implementations
 
         public async Task<ContentReactionsResponse> GetUserCommentariesReactions(int userId, int topicId)
         {
-            var user = await this.userService.GetByIdAsync(userId);
+            var user = await this.contentValidator.GetAndValidateUserAsync(userId);
 
-            if (user == null)
-            {
-                throw new NotFoundException(ContentType.User);
-            }
-
-            if (user.Status == ContentStatus.Banned)
-            {
-                throw new BannedContentException(ContentType.User);
-            }
-
-            var topic = await this.topicRepository.GetAsync(topicId);
-
-            if (topic == null)
-            {
-                throw new NotFoundException(ContentType.Topic);
-            }
-
-            if (topic.Status == ContentStatus.Banned)
-            {
-                throw new BannedContentException(ContentType.Topic);
-            }
+            var topic = await this.contentValidator.GetAndValidateTopicAsync(topicId);
 
             var commentariesIds = await this.topicCommentaryRepository.GetCommentariesIdByTopicIdAsync(topicId);
 
@@ -301,29 +234,9 @@ namespace Tod.Services.Implementations
 
         public async Task<ContentReactionData> GetUserCommentaryReaction(int userId, int commentaryId)
         {
-            var user = await this.userService.GetByIdAsync(userId);
+            var user = await this.contentValidator.GetAndValidateUserAsync(userId);
 
-            if (user == null)
-            {
-                throw new NotFoundException(ContentType.User);
-            }
-
-            if (user.Status == ContentStatus.Banned)
-            {
-                throw new BannedContentException(ContentType.User);
-            }
-
-            var commentary = await this.commentaryRepository.GetAsync(commentaryId);
-
-            if (commentary == null)
-            {
-                throw new NotFoundException(ContentType.Commentary);
-            }
-
-            if (commentary.Status == ContentStatus.Banned)
-            {
-                throw new BannedContentException(ContentType.Commentary);
-            }
+            var commentary = await this.contentValidator.GetAndValidateCommentaryAsync(commentaryId);
 
             var reactionId = await this.userCommentaryReactionRepository.GetByUserIdAndCommentaryId(userId, commentaryId);
 

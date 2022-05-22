@@ -20,6 +20,13 @@ namespace Tod.Services.Implementations
             this.topicTagRepository = topicTagRepository;
 		}
 
+        public async Task<Tag> GetByIdAsync(int tagId)
+        {
+            var tag = await this.tagRepository.GetAsync(tagId);
+
+            return this.Validate(tag);
+        }
+
         public async Task<Tag> GetByTitleAsync(string title)
         {
             return await this.tagRepository.GetByTitleAsync(title);
@@ -63,6 +70,21 @@ namespace Tod.Services.Implementations
             tag.UsedCount++;
 
             await this.tagRepository.UpdateAsync(tag);
+
+            return tag;
+        }
+
+        private Tag Validate(Tag tag)
+        {
+            if (tag == null)
+            {
+                return tag;
+            }
+
+            if (tag.Status == ContentStatus.Banned)
+            {
+                return null;
+            }
 
             return tag;
         }

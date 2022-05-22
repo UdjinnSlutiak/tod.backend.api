@@ -18,7 +18,7 @@ namespace Tod.Domain
         public DbSet<Reaction> Reactions { get; set; }
         public DbSet<Tag> Tags { get; set; }
         public DbSet<Report> Reports { get; set; }
-        public DbSet<UserTag> UserTags { get; set; }
+        public DbSet<InterestTag> InterestTags { get; set; }
         public DbSet<FavoriteTopic> FavoriteTopics { get; set; }
         public DbSet<UserReport> UserReports { get; set; }
         public DbSet<TopicTag> TopicTags { get; set; }
@@ -59,11 +59,11 @@ namespace Tod.Domain
                 .WithOne()
                 .HasForeignKey<UserCommentary>(c => c.CommentaryId);
 
-            builder.Entity<UserTag>()
+            builder.Entity<InterestTag>()
                 .HasOne<User>()
                 .WithMany()
                 .HasForeignKey(t => t.UserId);
-            builder.Entity<UserTag>()
+            builder.Entity<InterestTag>()
                 .HasOne<Tag>()
                 .WithMany()
                 .HasForeignKey(t => t.TagId);
@@ -169,7 +169,7 @@ namespace Tod.Domain
             builder.Entity<UserReport>()
                 .HasKey(ur => new { ur.UserId, ur.ReportId });
 
-            builder.Entity<UserTag>()
+            builder.Entity<InterestTag>()
                 .HasKey(ut => new { ut.UserId, ut.TagId });
         }
     }

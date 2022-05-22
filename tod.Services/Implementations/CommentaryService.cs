@@ -15,25 +15,25 @@ namespace Tod.Services.Implementations
 	public class CommentaryService : ICommentaryService
 	{
         private readonly ICommentaryRepository commentaryRepository;
-        private readonly ITopicRepository topicRepository;
         private readonly ITopicCommentaryRepository topicCommentaryRepository;
         private readonly IUserCommentaryRepository userCommentaryRepository;
         private readonly IUserService userService;
         private readonly IReactionService reactionService;
+        private readonly IContentValidator contentValidator;
 
 		public CommentaryService(ICommentaryRepository commentaryRepository,
-            ITopicRepository topicRepository,
             ITopicCommentaryRepository topicCommentaryRepository,
             IUserCommentaryRepository userCommentaryRepository,
             IUserService userService,
-            IReactionService reactionService)
+            IReactionService reactionService,
+            IContentValidator contentValidator)
 		{
             this.commentaryRepository = commentaryRepository;
-            this.topicRepository = topicRepository;
             this.topicCommentaryRepository = topicCommentaryRepository;
             this.userCommentaryRepository = userCommentaryRepository;
             this.userService = userService;
             this.reactionService = reactionService;
+            this.contentValidator = contentValidator;
 		}
 
         public async Task<Commentary> GetByIdAsync(int id)
@@ -43,6 +43,8 @@ namespace Tod.Services.Implementations
 
         public async Task<GetCommentariesResponse> GetTopicCommentariesAsync(int topicId)
         {
+            var topic = await this.contentValidator.GetAndValidateTopicAsync(topicId);
+
             var commentariesIds = await this.topicCommentaryRepository.GetCommentariesIdByTopicIdAsync(topicId);
 
             var commentaries = new List<CommentaryData>();
@@ -103,9 +105,9 @@ namespace Tod.Services.Implementations
 
         public async Task<CommentaryData> CreateCommentaryAsync(int topicId, int userId, string text)
         {
-            var user = await this.GetAndValidateUserAsync(userId);
+            var user = await this.contentValidator.GetAndValidateUserAsync(userId);
 
-            var topic = await this.GetAndValidateTopicAsync(topicId);
+            var topic = await this.contentValidator.GetAndValidateTopicAsync(topicId);
 
             var commentary = new Commentary
             {
@@ -128,38 +130,18 @@ namespace Tod.Services.Implementations
             };
         }
 
-        private async Task<User> GetAndValidateUserAsync(int userId)
+        public async Task MarkCommentaryDeletedAsync(int userId, int commentaryId)
         {
-            var user = await this.userService.GetByIdAsync(userId);
-
-            if (user == null)
+            var user = await this.contentValidator.GetAndValidateUserAsync(userId);
+            var authorId = await this.userCommentaryRepository.GetUserIdByCommentaryId(commentaryId);
+            if (userId != authorId)
             {
-                throw new NotFoundException(ContentType.User);
+                throw new PermissionDeniedException();
             }
 
-            if (user.Status == ContentStatus.Banned)
-            {
-                throw new BannedContentException(ContentType.User);
-            }
-
-            return user;
-        }
-
-        private async Task<Topic> GetAndValidateTopicAsync(int topicId)
-        {
-            var topic = await this.topicRepository.GetAsync(topicId);
-
-            if (topic == null)
-            {
-                throw new NotFoundException(ContentType.Topic);
-            }
-
-            if (topic.Status == ContentStatus.Banned)
-            {
-                throw new BannedContentException(ContentType.Topic);
-            }
-
-            return topic;
+            var commentary = await this.contentValidator.GetAndValidateCommentaryAsync(commentaryId);
+            commentary.Status = ContentStatus.DeletedByOwner;
+            await this.commentaryRepository.UpdateAsync(commentary);
         }
 
         private async Task CreateUserCommentaryAsync(int userId, int commentaryId)
