@@ -19,10 +19,13 @@ namespace Tod.Web.Controllers
 	public class AccountController : ControllerBase
 	{
 		private readonly IAccountService accountService;
+		private readonly IInterestTagService interestTagService;
 
-		public AccountController(IAccountService accountService)
+		public AccountController(IAccountService accountService,
+			IInterestTagService interestTagService)
 		{
 			this.accountService = accountService;
+			this.interestTagService = interestTagService;
 		}
 
 		[AllowAnonymous]
@@ -117,6 +120,50 @@ namespace Tod.Web.Controllers
 				return Unauthorized( ex.Message);
             }
         }
+
+		[HttpGet("interests")]
+		[ProducesResponseType(typeof(InterestTagsResponse), StatusCodes.Status200OK)]
+		[ProducesResponseType(typeof(string), StatusCodes.Status401Unauthorized)]
+		public async Task<ActionResult<InterestTagsResponse>> GetUserInterestTags()
+        {
+			try
+            {
+				var currentUserId = base.HttpContext.GetCurrentUserId();
+				var tags = await this.interestTagService.GetUserInterestTagsAsync(currentUserId);
+
+				return tags;
+			}
+			catch (InvalidTokenException ex)
+			{
+				return Unauthorized(ex.Message);
+			}
+			catch (NotFoundException ex)
+			{
+				return Unauthorized(ex.Message);
+			}
+		}
+
+		[HttpPut("interests")]
+		[ProducesResponseType(typeof(InterestTagsResponse), StatusCodes.Status200OK)]
+		[ProducesResponseType(typeof(string), StatusCodes.Status401Unauthorized)]
+		public async Task<ActionResult<InterestTagsResponse>> UpdateUserTagInterests(UpdateInterestTagsRequest request)
+		{
+			try
+			{
+				var currentUserId = base.HttpContext.GetCurrentUserId();
+				var tags = await this.interestTagService.UpdateUserInterestTagsAsync(currentUserId, request.TagsText);
+
+				return tags;
+			}
+			catch (InvalidTokenException ex)
+			{
+				return Unauthorized(ex.Message);
+			}
+			catch (NotFoundException ex)
+			{
+				return Unauthorized(ex.Message);
+			}
+		}
 	}
 }
 

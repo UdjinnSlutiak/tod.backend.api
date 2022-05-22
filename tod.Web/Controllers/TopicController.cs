@@ -43,7 +43,7 @@ namespace Tod.Web.Controllers
 
 			try
             {
-				var response = await this.topicService.GetTopicDataByIdAsync(userId, id);
+				var response = await this.topicService.GetTopicByIdAsync(userId, id);
 
 				return response;
             }
@@ -55,7 +55,11 @@ namespace Tod.Web.Controllers
             {
 				return NotFound(ex.Message);
             }
-        }
+			catch (DeletedContentException ex)
+			{
+				return NotFound(ex.Message);
+			}
+		}
 
 		[AllowAnonymous]
 		[HttpGet]
@@ -102,6 +106,10 @@ namespace Tod.Web.Controllers
 			{
 				return NotFound(ex.Message);
 			}
+			catch (DeletedContentException ex)
+			{
+				return NotFound(ex.Message);
+			}
 		}
 
 		[HttpGet("discussed")]
@@ -129,7 +137,11 @@ namespace Tod.Web.Controllers
             {
 				return NotFound(ex.Message);
             }
-        }
+			catch (DeletedContentException ex)
+			{
+				return NotFound(ex.Message);
+			}
+		}
 
 		[HttpGet("my")]
 		[ProducesResponseType(typeof(GetTopicsResponse), StatusCodes.Status200OK)]
@@ -156,7 +168,38 @@ namespace Tod.Web.Controllers
             {
 				return NotFound(ex.Message);
             }
-        }
+			catch (DeletedContentException ex)
+			{
+				return NotFound(ex.Message);
+			}
+		}
+
+		[HttpGet("recommended")]
+		[ProducesResponseType(typeof(GetTopicsResponse), StatusCodes.Status200OK)]
+		[ProducesResponseType(typeof(string), StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+		public async Task<ActionResult<GetTopicsResponse>> GetRecommendedTopics()
+        {
+			try
+			{
+				var userId = base.HttpContext.GetCurrentUserId();
+				var response = await this.topicService.GetRecommendedTopicsAsync(userId);
+
+				return response;
+			}
+			catch (InvalidTokenException ex)
+			{
+				return Unauthorized(ex.Message);
+			}
+			catch (NotFoundException ex)
+			{
+				return Unauthorized(ex.Message);
+			}
+			catch (DeletedContentException ex)
+			{
+				return NotFound(ex.Message);
+			}
+		}
 
 		[HttpPost]
 		[ProducesResponseType(typeof(CreateTopicResponse), StatusCodes.Status201Created)]
@@ -186,6 +229,10 @@ namespace Tod.Web.Controllers
 				return BadRequest(ex.Message);
             }
 			catch (BannedContentException ex)
+			{
+				return NotFound(ex.Message);
+			}
+			catch (DeletedContentException ex)
 			{
 				return NotFound(ex.Message);
 			}
@@ -231,7 +278,11 @@ namespace Tod.Web.Controllers
             {
 				return NotFound(ex.Message);
             }
-        }
+			catch (DeletedContentException ex)
+			{
+				return NotFound(ex.Message);
+			}
+		}
 
 		[AllowAnonymous]
 		[HttpPost("search")]
@@ -254,6 +305,41 @@ namespace Tod.Web.Controllers
 			catch (NotFoundException ex)
 			{
 				return NotFound(ex.Message);
+			}
+		}
+
+		[HttpDelete("{id}")]
+		[ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+		[ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(typeof(string), StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+		public async Task<ActionResult> DeleteTopic(int id)
+        {
+			try
+            {
+				var userId = base.HttpContext.GetCurrentUserId();
+				await this.topicService.MarkTopicDeletedAsync(userId, id);
+				return NoContent();
+            }
+			catch (NotFoundException ex)
+			{
+				return Unauthorized(ex.Message);
+			}
+			catch (InvalidTokenException ex)
+			{
+				return Unauthorized(ex.Message);
+			}
+			catch (BannedContentException ex)
+			{
+				return NotFound(ex.Message);
+			}
+			catch (DeletedContentException ex)
+			{
+				return NotFound(ex.Message);
+			}
+			catch (PermissionDeniedException ex)
+            {
+				return BadRequest(ex.Message);
 			}
 		}
 	}

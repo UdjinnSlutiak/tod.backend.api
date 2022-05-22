@@ -84,6 +84,16 @@ namespace Tod.Services.Implementations
                 }
             }
 
+            if (user.Status == ContentStatus.Banned)
+            {
+                throw new BannedContentException(ContentType.User);
+            }
+
+            if (user.Status == ContentStatus.DeletedByOwner)
+            {
+                throw new DeletedContentException(ContentType.User);
+            }
+
             var passwordMatch = this.passwordHasher.VerifyPassword(request.Password, user.PasswordHash);
 
             if (!passwordMatch)

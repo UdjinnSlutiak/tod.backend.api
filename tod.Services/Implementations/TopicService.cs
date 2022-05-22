@@ -23,6 +23,8 @@ namespace Tod.Services.Implementations
         private readonly ICommentaryService commentaryService;
         private readonly ITagService tagService;
         private readonly IReactionService reactionService;
+        private readonly IInterestTagService interestTagService;
+        private readonly IContentValidator contentValidator;
 
         public TopicService(ITopicRepository topicRepository,
             ITopicTagRepository topicTagRepository,
@@ -31,7 +33,9 @@ namespace Tod.Services.Implementations
             IUserService userService,
             ICommentaryService commentaryService,
             ITagService tagService,
-            IReactionService reactionService)
+            IReactionService reactionService,
+            IInterestTagService interestTagService,
+            IContentValidator contentValidator)
 		{
             this.topicRepository = topicRepository;
             this.topicTagRepository = topicTagRepository;
@@ -41,6 +45,8 @@ namespace Tod.Services.Implementations
             this.commentaryService = commentaryService;
             this.tagService = tagService;
             this.reactionService = reactionService;
+            this.interestTagService = interestTagService;
+            this.contentValidator = contentValidator;
 		}
 
         public async Task<Topic> GetByIdAsync(int topicId)
@@ -48,13 +54,13 @@ namespace Tod.Services.Implementations
             return await this.topicRepository.GetAsync(topicId);
         }
 
-        public async Task<TopicData> GetTopicDataByIdAsync(int userId, int id)
+        public async Task<TopicData> GetTopicByIdAsync(int userId, int id)
         {
-            var topic = await this.GetAndValidateTopicAsync(id);
+            var topic = await this.contentValidator.GetAndValidateTopicAsync(id);
 
             var authorId = await this.userTopicRepository.GetUserIdByTopicIdAsync(id);
 
-            var user = await this.GetAndValidateUserAsync(authorId);
+            var user = await this.contentValidator.GetAndValidateUserAsync(authorId);
 
             var tags = (await this.tagService.GetByTopicIdAsync(id)).ToList();
 
@@ -81,7 +87,7 @@ namespace Tod.Services.Implementations
             };
         }
 
-        public async Task<GetTopicsResponse> GetTopicsAsync(int userId, int skip, int offset)
+        public async Task<GetTopicsResponse> GetTopicsAsync(int userId, int skip = 0, int offset = 20)
         {
             var topics = await this.topicRepository.GetRangeAsync(skip, offset);
 
@@ -127,13 +133,13 @@ namespace Tod.Services.Implementations
 
             return new GetTopicsResponse
             {
-                Topics = topicsData
+                Topics = topicsData.Skip(skip).Take(offset).ToList()
             };
         }
 
-        public async Task<GetTopicsResponse> GetFavoritesAsync(int userId)
+        public async Task<GetTopicsResponse> GetFavoritesAsync(int userId, int skip = 0, int offset = 20)
         {
-            var user = await this.GetAndValidateUserAsync(userId);
+            var user = await this.contentValidator.GetAndValidateUserAsync(userId);
 
             var userFavoritesIds = this.favoriteRepository.GetByUserId(userId);
 
@@ -149,13 +155,13 @@ namespace Tod.Services.Implementations
 
             return new GetTopicsResponse
             {
-                Topics = topicsData
+                Topics = topicsData.Skip(skip).Take(offset).ToList()
             };
         }
 
-        public async Task<GetTopicsResponse> GetMyTopicsAsync(int userId)
+        public async Task<GetTopicsResponse> GetMyTopicsAsync(int userId, int skip = 0, int offset = 20)
         {
-            var user = await this.GetAndValidateUserAsync(userId);
+            var user = await this.contentValidator.GetAndValidateUserAsync(userId);
 
             var userTopicsIds = this.userTopicRepository.GetTopicsIdByUserId(userId);
 
@@ -171,19 +177,19 @@ namespace Tod.Services.Implementations
 
             return new GetTopicsResponse
             {
-                Topics = topics
+                Topics = topics.Skip(skip).Take(offset).ToList()
             };
         }
 
-        public async Task<GetTopicsResponse> GetDiscussedTopicsAsync(int userId)
+        public async Task<GetTopicsResponse> GetDiscussedTopicsAsync(int userId, int skip = 0, int offset = 20)
         {
-            var user = await this.GetAndValidateUserAsync(userId);
+            var user = await this.contentValidator.GetAndValidateUserAsync(userId);
 
             var discussedTopicsIds = await this.commentaryService.GetLatestDiscussedTopicsIds(userId);
             var discussedTopics = new List<TopicData>();
             foreach (var topicId in discussedTopicsIds)
             {
-                var topicData = await this.GetTopicDataByIdAsync(userId, topicId);
+                var topicData = await this.GetTopicByIdAsync(userId, topicId);
                 if (topicData == null)
                 {
                     continue;
@@ -193,13 +199,34 @@ namespace Tod.Services.Implementations
 
             return new GetTopicsResponse
             {
-                Topics = discussedTopics
+                Topics = discussedTopics.Skip(skip).Take(offset).ToList()
+            };
+        }
+
+        public async Task<GetTopicsResponse> GetRecommendedTopicsAsync(int userId, int skip = 0, int offset = 20)
+        {
+            var user = await this.contentValidator.GetAndValidateUserAsync(userId);
+
+            var interestTags = await this.interestTagService.GetUserInterestTagsAsync(userId);
+            var topicsIds = new List<int>();
+            foreach (var tag in interestTags.Tags)
+            {
+                var topicsIdsByTag = await this.topicTagRepository.GetByTagIdAsync(tag.Id);
+                topicsIds = topicsIds.Union(topicsIdsByTag).ToList();
+            }
+
+            var topics = (await this.GetTopicsDataByTopicsIds(topicsIds.OrderByDescending(t => t).ToList()))
+                .Skip(skip).Take(offset).ToList();
+
+            return new GetTopicsResponse
+            {
+                Topics = topics
             };
         }
 
         public async Task<CreateTopicResponse> CreateAsync(CreateTopicRequest request, int userId)
         {
-            var user = await this.GetAndValidateUserAsync(userId);
+            var user = await this.contentValidator.GetAndValidateUserAsync(userId);
 
             var topicSearchResult = await this.topicRepository.GetByTitleAsync(request.Title);
 
@@ -253,9 +280,9 @@ namespace Tod.Services.Implementations
 
         public async Task<bool> AddToFavoritesAsync(int topicId, int userId)
         {
-            var topic = await this.GetAndValidateTopicAsync(topicId);
+            var topic = await this.contentValidator.GetAndValidateTopicAsync(topicId);
 
-            var user = await this.GetAndValidateUserAsync(userId);
+            var user = await this.contentValidator.GetAndValidateUserAsync(userId);
 
             var authorId = await this.userTopicRepository.GetUserIdByTopicIdAsync(topicId);
 
@@ -324,6 +351,20 @@ namespace Tod.Services.Implementations
             };
         }
 
+        public async Task MarkTopicDeletedAsync(int userId, int topicId)
+        {
+            var user = await this.contentValidator.GetAndValidateUserAsync(userId);
+            var authorId = await this.userTopicRepository.GetUserIdByTopicIdAsync(topicId);
+            if (userId != authorId)
+            {
+                throw new PermissionDeniedException();
+            }
+
+            var topic = await this.contentValidator.GetAndValidateTopicAsync(topicId);
+            topic.Status = ContentStatus.DeletedByOwner;
+            await this.topicRepository.UpdateAsync(topic);
+        }
+
         private async Task<List<TopicData>> GetTopicsDataByTopicsIds(List<int> topicsIds)
         {
             var topicsData = new List<TopicData>();
@@ -332,7 +373,7 @@ namespace Tod.Services.Implementations
             {
                 var topic = await this.topicRepository.GetAsync(topicId);
 
-                if (topic == null || topic.Status == ContentStatus.Banned)
+                if (topic == null || topic.Status == ContentStatus.Banned || topic.Status == ContentStatus.DeletedByOwner)
                 {
                     continue;
                 }
@@ -341,7 +382,7 @@ namespace Tod.Services.Implementations
 
                 var author = await this.userService.GetByIdAsync(authorId);
 
-                if (author == null || author.Status == ContentStatus.Banned)
+                if (author == null || author.Status == ContentStatus.Banned || author.Status == ContentStatus.DeletedByOwner)
                 {
                     continue;
                 }
@@ -487,40 +528,6 @@ namespace Tod.Services.Implementations
             }
 
             return topicsIds;
-        }
-
-        private async Task<User> GetAndValidateUserAsync(int userId)
-        {
-            var user = await this.userService.GetByIdAsync(userId);
-
-            if (user == null)
-            {
-                throw new NotFoundException(ContentType.User);
-            }
-
-            if (user.Status == ContentStatus.Banned)
-            {
-                throw new BannedContentException(ContentType.User);
-            }
-
-            return user;
-        }
-
-        private async Task<Topic> GetAndValidateTopicAsync(int topicId)
-        {
-            var topic = await this.topicRepository.GetAsync(topicId);
-
-            if (topic == null)
-            {
-                throw new NotFoundException(ContentType.Topic);
-            }
-
-            if (topic.Status == ContentStatus.Banned)
-            {
-                throw new BannedContentException(ContentType.Topic);
-            }
-
-            return topic;
         }
 
         private async Task UpdateAuthorRatingAsync(int authorId, int value)
