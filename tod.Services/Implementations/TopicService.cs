@@ -108,10 +108,7 @@ namespace Tod.Services.Implementations
 
                 var tags = (await this.tagService.GetByTopicIdAsync(topic.Id)).ToList();
 
-                var reactions = await this.reactionService.GetByTopicIdAsync(topic.Id);
-
-                var positive = reactions.Where(r => r.ReactionValue == ReactionValue.Positive).Count();
-                var negative = reactions.Count - positive;
+                var rating = await this.GetTopicRating(topic.Id);
 
                 var fromFavorite = (FavoriteTopic)null;
                 if (userId != 0)
@@ -126,7 +123,7 @@ namespace Tod.Services.Implementations
                     CreatedUtc = topic.CreatedUtc,
                     Author = new UserDto(author),
                     Tags = tags,
-                    Rating = positive - negative,
+                    Rating = rating,
                     IsInFavorite = fromFavorite != null
                 });
             }
@@ -246,27 +243,7 @@ namespace Tod.Services.Implementations
 
             await this.CreateUserTopicAsync(userId, topic.Id);
 
-            var topicTags = new List<Tag>();
-            foreach (var title in request.Tags)
-            {
-                var tag = await this.tagService.GetByTitleAsync(title);
-
-                if (tag != null && tag.Status == ContentStatus.Banned)
-                {
-                    continue;
-                }
-
-                if (tag == null)
-                {
-                    tag = await this.tagService.CreateAsync(title, userId);
-                }
-
-                await this.tagService.IncreaseUsedCountAsync(tag);
-
-                await this.CreateTopicTagAsync(tag.Id, topic.Id);
-
-                topicTags.Add(tag);
-            }
+            var topicTags = await this.GetTopicTagsAsync(userId, topic.Id, request.Tags);
 
             return new CreateTopicResponse
             {
@@ -275,6 +252,42 @@ namespace Tod.Services.Implementations
                 Author = new UserDto(user),
                 CreatedUtc = topic.CreatedUtc,
                 Tags = topicTags
+            };
+        }
+
+        public async Task<TopicData> UpdateTopicAsync(int userId, int topicId, CreateTopicRequest request)
+        {
+            var user = await this.contentValidator.GetAndValidateUserAsync(userId);
+            var authorId = await this.userTopicRepository.GetUserIdByTopicIdAsync(topicId);
+            if (userId != authorId)
+            {
+                throw new PermissionDeniedException();
+            }
+
+            var topic = await this.contentValidator.GetAndValidateTopicAsync(topicId);
+
+            var topicByTitle = await this.topicRepository.GetByTitleAsync(request.Title);
+            if (topicByTitle != null)
+            {
+                throw new TopicAlreadyExistsException();
+            }
+
+            topic.Title = request.Title;
+            topic = await this.topicRepository.UpdateAsync(topic);
+            await this.topicTagRepository.DeleteTopicTagsAsync(topicId);
+            var topicTags = await this.GetTopicTagsAsync(userId, topicId, request.Tags);
+
+            var rating = await this.GetTopicRating(topicId);
+
+            return new TopicData
+            {
+                Id = topic.Id,
+                Title = topic.Title,
+                CreatedUtc = topic.CreatedUtc,
+                Author = new UserDto(user),
+                Tags = topicTags,
+                Rating = rating,
+                IsInFavorite = false,
             };
         }
 
@@ -406,6 +419,43 @@ namespace Tod.Services.Implementations
             }
 
             return topicsData;
+        }
+
+        private async Task<List<Tag>> GetTopicTagsAsync(int userId, int topicId, List<string> tagsTitles)
+        {
+            var topicTags = new List<Tag>();
+            foreach (var title in tagsTitles)
+            {
+                var tag = await this.tagService.GetByTitleAsync(title);
+
+                if (tag != null && tag.Status == ContentStatus.Banned)
+                {
+                    continue;
+                }
+
+                if (tag == null)
+                {
+                    tag = await this.tagService.CreateAsync(title, userId);
+                }
+
+                await this.tagService.IncreaseUsedCountAsync(tag);
+
+                await this.CreateTopicTagAsync(tag.Id, topicId);
+
+                topicTags.Add(tag);
+            }
+
+            return topicTags;
+        }
+
+        private async Task<int> GetTopicRating(int topicId)
+        {
+            var reactions = await this.reactionService.GetByTopicIdAsync(topicId);
+
+            var positive = reactions.Where(r => r.ReactionValue == ReactionValue.Positive).Count();
+            var negative = reactions.Count - positive;
+
+            return positive - negative;
         }
 
         private async Task<List<int>> SearchTopicByAuthorAsync(string username)

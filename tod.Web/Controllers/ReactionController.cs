@@ -43,6 +43,14 @@ namespace Tod.Web.Controllers
 
 				return Ok();
             }
+			catch (ContentBelongsToYouException ex)
+            {
+				return BadRequest(ex.Message);
+            }
+			catch (AlreadyReactedException ex)
+            {
+				return BadRequest(ex.Message);
+            }
 			catch (InvalidTokenException ex)
 			{
 				return Unauthorized(ex.Message);
@@ -54,14 +62,6 @@ namespace Tod.Web.Controllers
 			catch (BannedContentException ex)
             {
 				return NotFound(ex.Message);
-            }
-			catch (ContentBelongsToYouException ex)
-            {
-				return BadRequest(ex.Message);
-            }
-			catch (AlreadyReactedException ex)
-            {
-				return BadRequest(ex.Message);
             }
 		}
 
@@ -85,6 +85,14 @@ namespace Tod.Web.Controllers
 
 				return Ok();
 			}
+			catch (ContentBelongsToYouException ex)
+			{
+				return BadRequest(ex.Message);
+			}
+			catch (AlreadyReactedException ex)
+			{
+				return BadRequest(ex.Message);
+			}
 			catch (InvalidTokenException ex)
 			{
 				return Unauthorized(ex.Message);
@@ -96,14 +104,6 @@ namespace Tod.Web.Controllers
 			catch (BannedContentException ex)
 			{
 				return NotFound(ex.Message);
-			}
-			catch (ContentBelongsToYouException ex)
-			{
-				return BadRequest(ex.Message);
-			}
-			catch (AlreadyReactedException ex)
-			{
-				return BadRequest(ex.Message);
 			}
 		}
 
