@@ -216,6 +216,10 @@ namespace Tod.Web.Controllers
 
 				return response;
 			}
+			catch (TopicAlreadyExistsException ex)
+            {
+				return BadRequest(ex.Message);
+            }
 			catch (NotFoundException ex)
             {
 				return Unauthorized(ex.Message);
@@ -224,10 +228,47 @@ namespace Tod.Web.Controllers
             {
 				return Unauthorized(ex.Message);
 			}
-			catch (TopicAlreadyExistsException ex)
-            {
+			catch (BannedContentException ex)
+			{
+				return NotFound(ex.Message);
+			}
+			catch (DeletedContentException ex)
+			{
+				return NotFound(ex.Message);
+			}
+		}
+
+		[HttpPut("{id}")]
+		[ProducesResponseType(typeof(TopicData), StatusCodes.Status200OK)]
+		[ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(typeof(string), StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+		public async Task<ActionResult<TopicData>> UpdateTopic(int id, [FromBody] CreateTopicRequest request)
+        {
+			try
+			{
+				var userId = base.HttpContext.GetCurrentUserId();
+
+				var response = await this.topicService.UpdateTopicAsync(userId, id, request);
+
+				return response;
+			}
+			catch (PermissionDeniedException ex)
+			{
 				return BadRequest(ex.Message);
-            }
+			}
+			catch (TopicAlreadyExistsException ex)
+			{
+				return BadRequest(ex.Message);
+			}
+			catch (NotFoundException ex)
+			{
+				return Unauthorized(ex.Message);
+			}
+			catch (InvalidTokenException ex)
+			{
+				return Unauthorized(ex.Message);
+			}
 			catch (BannedContentException ex)
 			{
 				return NotFound(ex.Message);
@@ -258,14 +299,6 @@ namespace Tod.Web.Controllers
 
 				return Ok();
             }
-			catch (NotFoundException ex)
-            {
-				return Unauthorized(ex.Message);
-            }
-			catch (InvalidTokenException ex)
-            {
-				return Unauthorized(ex.Message);
-            }
 			catch (TopicAlreadyInFavoritesException ex)
             {
 				return BadRequest(ex.Message);
@@ -273,6 +306,14 @@ namespace Tod.Web.Controllers
 			catch (ContentBelongsToYouException ex)
             {
 				return BadRequest(ex.Message);
+            }
+			catch (NotFoundException ex)
+            {
+				return Unauthorized(ex.Message);
+            }
+			catch (InvalidTokenException ex)
+            {
+				return Unauthorized(ex.Message);
             }
 			catch (BannedContentException ex)
             {
@@ -321,6 +362,10 @@ namespace Tod.Web.Controllers
 				await this.topicService.MarkTopicDeletedAsync(userId, id);
 				return NoContent();
             }
+			catch (PermissionDeniedException ex)
+            {
+				return BadRequest(ex.Message);
+			}
 			catch (NotFoundException ex)
 			{
 				return Unauthorized(ex.Message);
@@ -336,10 +381,6 @@ namespace Tod.Web.Controllers
 			catch (DeletedContentException ex)
 			{
 				return NotFound(ex.Message);
-			}
-			catch (PermissionDeniedException ex)
-            {
-				return BadRequest(ex.Message);
 			}
 		}
 	}

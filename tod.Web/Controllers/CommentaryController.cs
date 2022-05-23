@@ -54,7 +54,6 @@ namespace Tod.Web.Controllers
 			try
             {
 				var userId = base.HttpContext.GetCurrentUserId();
-
 				var response = await this.commentaryService.CreateCommentaryAsync(topicId, userId, request.Text);
 
 				return response;
@@ -73,18 +72,23 @@ namespace Tod.Web.Controllers
             }
         }
 
-		[HttpDelete("commentaries/{id}")]
+		[HttpPut("commentaries/{id}")]
 		[ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
 		[ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(typeof(string), StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
-		public async Task<ActionResult> DeleteCommentary(int id)
-		{
+		public async Task<ActionResult<CommentaryData>> UpdateCommentary(int id, [FromBody] UpdateCommentaryRequest request)
+        {
 			try
 			{
 				var userId = base.HttpContext.GetCurrentUserId();
-				await this.commentaryService.MarkCommentaryDeletedAsync(userId, id);
-				return NoContent();
+				var response = await this.commentaryService.UpdateCommentaryAsync(userId, id, request);
+
+				return response;
+			}
+			catch (PermissionDeniedException ex)
+			{
+				return BadRequest(ex.Message);
 			}
 			catch (NotFoundException ex)
 			{
@@ -102,9 +106,40 @@ namespace Tod.Web.Controllers
 			{
 				return NotFound(ex.Message);
 			}
+		}
+
+		[HttpDelete("commentaries/{id}")]
+		[ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+		[ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(typeof(string), StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+		public async Task<ActionResult> DeleteCommentary(int id)
+		{
+			try
+			{
+				var userId = base.HttpContext.GetCurrentUserId();
+				await this.commentaryService.MarkCommentaryDeletedAsync(userId, id);
+				return NoContent();
+			}
 			catch (PermissionDeniedException ex)
 			{
 				return BadRequest(ex.Message);
+			}
+			catch (NotFoundException ex)
+			{
+				return Unauthorized(ex.Message);
+			}
+			catch (InvalidTokenException ex)
+			{
+				return Unauthorized(ex.Message);
+			}
+			catch (BannedContentException ex)
+			{
+				return NotFound(ex.Message);
+			}
+			catch (DeletedContentException ex)
+			{
+				return NotFound(ex.Message);
 			}
 		}
 	}

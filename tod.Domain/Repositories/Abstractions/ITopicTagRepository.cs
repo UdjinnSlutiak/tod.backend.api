@@ -9,6 +9,7 @@ namespace Tod.Domain.Repositories.Abstractions
 	{
 		public Task<List<int>> GetByTopicIdAsync(int topicId);
 		public Task<List<int>> GetByTagIdAsync(int tagId);
+		public Task DeleteTopicTagsAsync(int topicId);
 	}
 }
 

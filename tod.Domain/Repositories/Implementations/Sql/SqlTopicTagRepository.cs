@@ -31,6 +31,11 @@ namespace Tod.Domain.Repositories.Implementations.Sql
 				.Select(tt => tt.TopicId).ToListAsync();
         }
 
+		public async Task DeleteTopicTagsAsync(int topicId)
+        {
+			var topicTags = await this.context.Set<TopicTag>().Where(tt => tt.TopicId == topicId).ToListAsync();
+			this.context.RemoveRange(topicTags);
+        }
 	}
 }
 

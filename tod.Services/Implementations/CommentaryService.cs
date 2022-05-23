@@ -8,6 +8,7 @@ using Tod.Domain.Models.Enums;
 using Tod.Domain.Repositories.Abstractions;
 using Tod.Services.Abstractions;
 using Tod.Services.Exceptions;
+using Tod.Services.Requests;
 using Tod.Services.Responses;
 
 namespace Tod.Services.Implementations
@@ -64,13 +65,9 @@ namespace Tod.Services.Implementations
                 }
 
                 var authorId = await this.userCommentaryRepository.GetUserIdByCommentaryId(commentaryId);
-
                 var user = await this.userService.GetByIdAsync(authorId);
 
-                var reactions = await this.reactionService.GetReactionsByCommentaryIdAsync(commentaryId);
-
-                var positive = reactions.Where(r => r.ReactionValue == ReactionValue.Positive).Count();
-                var negative = reactions.Count - positive;
+                var rating = await this.GetCommentaryRating(commentaryId);
 
                 commentaries.Add(new CommentaryData
                 {
@@ -78,7 +75,7 @@ namespace Tod.Services.Implementations
                     Text = commentary.Text,
                     CreatedUtc = commentary.CreatedUtc,
                     Author = new UserDto(user),
-                    Rating = positive - negative
+                    Rating = rating
                 });
             }
 
@@ -123,7 +120,6 @@ namespace Tod.Services.Implementations
         public async Task<CommentaryData> CreateCommentaryAsync(int topicId, int userId, string text)
         {
             var user = await this.contentValidator.GetAndValidateUserAsync(userId);
-
             var topic = await this.contentValidator.GetAndValidateTopicAsync(topicId);
 
             var commentary = new Commentary
@@ -147,6 +143,33 @@ namespace Tod.Services.Implementations
             };
         }
 
+        public async Task<CommentaryData> UpdateCommentaryAsync(int userId, int commentaryId, UpdateCommentaryRequest request)
+        {
+            var user = await this.contentValidator.GetAndValidateUserAsync(userId);
+            var topicId = await this.topicCommentaryRepository.GetTopicIdByCommentaryId(commentaryId);
+            var topic = await this.contentValidator.GetAndValidateTopicAsync(topicId);
+            var commentary = await this.contentValidator.GetAndValidateCommentaryAsync(commentaryId);
+
+            var authorId = await this.userCommentaryRepository.GetUserIdByCommentaryId(commentaryId);
+            if (userId != authorId)
+            {
+                throw new PermissionDeniedException();
+            }
+
+            commentary.Text = request.Text;
+            commentary = await this.commentaryRepository.UpdateAsync(commentary);
+
+            var rating = await this.GetCommentaryRating(commentaryId);
+
+            return new CommentaryData
+            {
+                Text = commentary.Text,
+                CreatedUtc = commentary.CreatedUtc,
+                Rating = rating,
+                Author = new UserDto(user)
+            };
+        }
+
         public async Task MarkCommentaryDeletedAsync(int userId, int commentaryId)
         {
             var user = await this.contentValidator.GetAndValidateUserAsync(userId);
@@ -159,6 +182,16 @@ namespace Tod.Services.Implementations
             var commentary = await this.contentValidator.GetAndValidateCommentaryAsync(commentaryId);
             commentary.Status = ContentStatus.DeletedByOwner;
             await this.commentaryRepository.UpdateAsync(commentary);
+        }
+
+        private async Task<int> GetCommentaryRating(int commentaryId)
+        {
+            var reactions = await this.reactionService.GetReactionsByCommentaryIdAsync(commentaryId);
+
+            var positive = reactions.Where(r => r.ReactionValue == ReactionValue.Positive).Count();
+            var negative = reactions.Count - positive;
+
+            return positive - negative;
         }
 
         private async Task CreateUserCommentaryAsync(int userId, int commentaryId)
