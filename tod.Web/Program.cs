@@ -105,6 +105,10 @@ services.AddTransient<IUserCommentaryRepository, SqlUserCommentaryRepository>();
 services.AddTransient<IUserCommentaryReactionRepository, SqlUserCommentaryReactionRepository>();
 services.AddTransient<IFavoriteRepository, SqlFavoriteRepository>();
 services.AddTransient<IInterestTagRepository, SqlInterestTagRepository>();
+services.AddTransient<IReportRepository, SqlReportRepository>();
+services.AddTransient<IUserReportRepository, SqlUserReportRepository>();
+services.AddTransient<ITopicReportRepository, SqlTopicReportRepository>();
+services.AddTransient<ICommentaryReportRepository, SqlCommentaryReportRepository>();
 
 services.AddTransient<IAccountService, JwtAccountService>();
 services.AddTransient<ITokenService, JwtTokenService>();
@@ -115,6 +119,7 @@ services.AddTransient<ITagService, TagService>();
 services.AddTransient<IReactionService, ReactionService>();
 services.AddTransient<IInterestTagService, InterestTagService>();
 services.AddTransient<IRedisService, RedisService>();
+services.AddTransient<IModerationService, ModerationService>();
 services.AddTransient<IPasswordHasher, Rfc2898PasswordHasher>();
 services.AddTransient<IContentValidator, ContentValidator>();
 

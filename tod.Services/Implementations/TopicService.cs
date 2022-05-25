@@ -255,7 +255,7 @@ namespace Tod.Services.Implementations
             };
         }
 
-        public async Task<TopicData> UpdateTopicAsync(int userId, int topicId, CreateTopicRequest request)
+        public async Task<TopicData> UpdateAsync(int userId, int topicId, CreateTopicRequest request)
         {
             var user = await this.contentValidator.GetAndValidateUserAsync(userId);
             var authorId = await this.userTopicRepository.GetUserIdByTopicIdAsync(topicId);
@@ -289,6 +289,11 @@ namespace Tod.Services.Implementations
                 Rating = rating,
                 IsInFavorite = false,
             };
+        }
+
+        public async Task UpdateAsync(Topic topic)
+        {
+            await this.topicRepository.UpdateAsync(topic);
         }
 
         public async Task<bool> AddToFavoritesAsync(int topicId, int userId)

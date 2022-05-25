@@ -40,6 +40,24 @@ namespace Tod.Services.Implementations
             this.contentValidator = contentValidator;
 		}
 
+        public async Task<CommentaryData> GetDataByIdAsync(int id)
+        {
+            var commentary = await this.commentaryRepository.GetAsync(id);
+            var authorId = await this.userCommentaryRepository.GetUserIdByCommentaryId(id);
+            var user = await this.userService.GetByIdAsync(authorId);
+
+            var rating = await this.GetCommentaryRating(id);
+
+            return new CommentaryData
+            {
+                Id = id,
+                Text = commentary.Text,
+                CreatedUtc = commentary.CreatedUtc,
+                Rating = rating,
+                Author = new UserDto(user)
+            };
+        }
+
         public async Task<Commentary> GetByIdAsync(int id)
         {
             return await this.commentaryRepository.GetAsync(id);
@@ -168,6 +186,11 @@ namespace Tod.Services.Implementations
                 Rating = rating,
                 Author = new UserDto(user)
             };
+        }
+
+        public async Task UpdateCommentaryAsync(Commentary commentary)
+        {
+            await this.commentaryRepository.UpdateAsync(commentary);
         }
 
         public async Task MarkCommentaryDeletedAsync(int userId, int commentaryId)

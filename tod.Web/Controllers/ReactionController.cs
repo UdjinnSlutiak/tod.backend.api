@@ -63,6 +63,10 @@ namespace Tod.Web.Controllers
             {
 				return NotFound(ex.Message);
             }
+			catch (DeletedContentException ex)
+			{
+				return NotFound(ex.Message);
+			}
 		}
 
 		[HttpPost("commentaries/{id}")]
@@ -102,6 +106,10 @@ namespace Tod.Web.Controllers
 				return Unauthorized(ex.Message);
 			}
 			catch (BannedContentException ex)
+			{
+				return NotFound(ex.Message);
+			}
+			catch (DeletedContentException ex)
 			{
 				return NotFound(ex.Message);
 			}
