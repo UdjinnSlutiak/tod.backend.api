@@ -36,10 +36,7 @@ namespace Tod.Web.Controllers
             {
 				userId = base.HttpContext.GetCurrentUserId();
             }
-			catch (InvalidTokenException ex)
-            {
-
-            }
+			catch (InvalidTokenException) { }
 
 			try
             {
@@ -71,10 +68,7 @@ namespace Tod.Web.Controllers
             {
 				userId = base.HttpContext.GetCurrentUserId();
 			}
-			catch (InvalidTokenException ex)
-            {
-
-            }
+			catch (InvalidTokenException) { }
 
 			var response = await this.topicService.GetTopicsAsync(userId, skip, offset);
 
@@ -249,7 +243,7 @@ namespace Tod.Web.Controllers
 			{
 				var userId = base.HttpContext.GetCurrentUserId();
 
-				var response = await this.topicService.UpdateTopicAsync(userId, id, request);
+				var response = await this.topicService.UpdateAsync(userId, id, request);
 
 				return response;
 			}
